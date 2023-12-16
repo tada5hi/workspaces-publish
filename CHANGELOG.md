@@ -1,3 +1,10 @@
+## [1.0.2](https://github.com/tada5hi/workspaces-publish/compare/v1.0.1...v1.0.2) (2023-12-16)
+
+
+### Bug Fixes
+
+* add missing cli file header ([a80a940](https://github.com/tada5hi/workspaces-publish/commit/a80a940e684595c42d75c5f69cc97960338a9cc4))
+
 ## [1.0.1](https://github.com/tada5hi/workspaces-publish/compare/v1.0.0...v1.0.1) (2023-12-16)
 
 
