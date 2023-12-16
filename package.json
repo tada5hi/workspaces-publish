@@ -40,7 +40,8 @@
         "lint": "eslint --ext .js,.vue,.ts ./src",
         "lint:fix": "npm run lint -- --fix",
         "prepare": "husky install",
-        "dev": "ts-node src/cli/index.ts"
+        "dev": "ts-node src/index.ts",
+        "start": "node dist/index.cjs"
     },
     "keywords": [],
     "bin": {

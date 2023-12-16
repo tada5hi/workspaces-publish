@@ -21,3 +21,17 @@ npx workspaces-publish \
   --registry <registry> \
   --root <root>
 ```
+
+### token
+- Type: `String`
+- Description: Token for the registry.
+
+### registry
+- Type: `String`
+- Default: `https://registry.npmjs.org/`
+- Description: Registry url.
+
+### root
+- Type: `String`
+- Default: `process.cwd()`
+- Description: Directory where the root package.json is located.
