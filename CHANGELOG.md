@@ -1,3 +1,10 @@
+## [1.0.1](https://github.com/tada5hi/workspaces-publish/compare/v1.0.0...v1.0.1) (2023-12-16)
+
+
+### Bug Fixes
+
+* enforce cli options + enhanced README.md ([98bbdac](https://github.com/tada5hi/workspaces-publish/commit/98bbdac5f331f8b055b926d5c1dcac7988331376))
+
 # 1.0.0 (2023-12-16)
 
 
