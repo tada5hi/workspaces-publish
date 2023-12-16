@@ -8,13 +8,20 @@ const cli = cac();
 
 cli
     .command('', 'Publish workspace packages')
-    .option('--token [token]', 'Token for registry')
+    .option('--token [token]', 'Token for registry', {
+        default: process.env.NODE_AUTH_TOKEN,
+    })
     .option('--registry [registry]', 'Registry url', {
         default: 'https://registry.npmjs.org/',
     })
     .option('--root [root]', 'Root directory')
-    .action(async (options: Record<string, any>) => {
+    .action(async (options: { token?: string, registry?: string, root?: string}) => {
         const root = options.root || process.cwd();
+
+        if (!options.token) {
+            consola.error('A token must be provided...');
+            process.exit(1);
+        }
 
         const { workspaces } = await readPackageJson(root);
         if (!Array.isArray(workspaces)) {
