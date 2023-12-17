@@ -6,7 +6,8 @@
 [![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-%23FE5196?logo=conventionalcommits&logoColor=white)](https://conventionalcommits.org)
 
 This library facilitates the publication of packages encompassing multiple workspaces as defined in a package.json file.
-
+It determines the unpublished packages by checking each package manifest of the registry,
+if one already exists.
 ## Installation
 
 ```bash
