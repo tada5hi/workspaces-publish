@@ -25,6 +25,7 @@ npx workspaces-publish \
 
 ### token
 - Type: `String`
+- Default: `process.env.NODE_AUTH_TOKEN`
 - Description: Token for the registry.
 
 ### registry
