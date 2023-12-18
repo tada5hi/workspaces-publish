@@ -12,7 +12,8 @@ export type PackageJson = {
 
 export type Package = {
     path: string;
-    content: PackageJson
+    content: PackageJson,
+    published?: boolean
 };
 
 export type PackagePublishOptions = {

@@ -60,3 +60,14 @@ export async function publishPackage(pkg: Package, options: PackagePublishOption
         throw e;
     }
 }
+
+export async function publishPackages(pkgs: Package[], options: PackagePublishOptions) : Promise<Package[]> {
+    for (let i = 0; i < pkgs.length; i++) {
+        pkgs[i].published = await publishPackage(pkgs[i], {
+            token: options.token,
+            registry: options.registry,
+        });
+    }
+
+    return pkgs;
+}

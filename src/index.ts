@@ -2,7 +2,7 @@
 
 import { cac } from 'cac';
 import consola from 'consola';
-import { getUnpublishedPackages, publishPackage } from './package';
+import { getUnpublishedPackages, publishPackages } from './package';
 import { readPackageJson } from './package-json';
 import { readWorkspacePackages } from './workspace';
 
@@ -34,16 +34,16 @@ cli
         let packages = await readWorkspacePackages(workspaces!, options.root);
         packages = await getUnpublishedPackages(packages);
         if (packages.length === 0) {
-            consola.info('No changed packages to publish');
+            consola.info('No packages need to be published.');
         }
 
-        for (let i = 0; i < packages.length; i++) {
-            const published = await publishPackage(packages[i], {
-                token: options.token,
-                registry: options.registry,
-            });
+        await publishPackages(packages, {
+            token: options.token,
+            registry: options.registry,
+        });
 
-            if (published) {
+        for (let i = 0; i < packages.length; i++) {
+            if (packages[i].published) {
                 consola.success(`published ${packages[i].content.name}@${packages[i].content.version}`);
             } else {
                 consola.success(`already published ${packages[i].content.name}@${packages[i].content.version}`);

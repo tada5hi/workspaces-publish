@@ -3,8 +3,8 @@ import { glob } from 'glob';
 import { readPackageJson } from './package-json';
 import type { Package } from './types';
 
-export async function readWorkspacePackages(workspaces: string[], cwd?: string) : Promise<Package[]> {
-    const directories = await glob(workspaces, {
+export async function readWorkspacePackages(workspace: string | string[], cwd?: string) : Promise<Package[]> {
+    const directories = await glob(workspace, {
         ignore: ['node_modules/**'],
         cwd,
         absolute: true,
