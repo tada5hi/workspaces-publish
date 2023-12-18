@@ -41,7 +41,7 @@
         "lint:fix": "npm run lint -- --fix",
         "prepare": "husky install",
         "dev": "ts-node src/cli.ts",
-        "start": "node dist/index.cjs"
+        "start": "node dist/cli.cjs"
     },
     "keywords": [],
     "bin": {
