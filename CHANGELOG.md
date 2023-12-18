@@ -1,3 +1,10 @@
+# [1.1.0](https://github.com/tada5hi/workspaces-publish/compare/v1.0.2...v1.1.0) (2023-12-18)
+
+
+### Features
+
+* collection fn to publish packages ([990a91c](https://github.com/tada5hi/workspaces-publish/commit/990a91cd6608eeaf70387c6eb757b34ec685ad5b))
+
 ## [1.0.2](https://github.com/tada5hi/workspaces-publish/compare/v1.0.1...v1.0.2) (2023-12-16)
 
 

@@ -1,6 +1,6 @@
 {
     "name": "workspaces-publish",
-    "version": "1.0.2",
+    "version": "1.1.0",
     "description": "A library to publish packages of multiple workspaces.",
     "author": {
         "name": "Peter Placzek",
