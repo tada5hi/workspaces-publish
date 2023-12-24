@@ -17,6 +17,7 @@ export async function readWorkspacePackages(workspace: string | string[], cwd?: 
 
         if (!pkg.name) {
             consola.info(`${pkg.name} has no version attribute`);
+            continue;
         }
 
         if (pkg.private) {
@@ -25,7 +26,8 @@ export async function readWorkspacePackages(workspace: string | string[], cwd?: 
         }
 
         if (!pkg.version) {
-            consola.info(`${pkg.name} has no version attribute`);
+            consola.info(`${pkg.name} has no name attribute`);
+            continue;
         }
 
         pkgs.push({
