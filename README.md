@@ -37,11 +37,10 @@ npx workspaces-publish \
 ### root
 - Type: `String`
 - Default: `process.cwd()`
-- Description: Directory where the root package.json is located.
+- Description: Directory where the root package is located.
 
 ### rootPackage
 - Type: `Boolean`
 - Default: `true`
-- Description: Also consider the root package for publishing.
-  Also consider the root package for publishing. The library still 
-  checks whether a Name & Version property is set and whether the private property evaluates to false.
+- Description: Also consider the root package for publishing. The library still 
+  checks whether a name- & version-property is set and whether the private property evaluates to false.
