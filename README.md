@@ -8,6 +8,13 @@
 This library facilitates the publication of packages encompassing multiple workspaces as defined in a package.json file.
 It determines the unpublished packages by checking each package manifest of the registry,
 if one already exists.
+
+The library is based on the packages 
+([pacote](https://www.npmjs.com/package/pacote), 
+[libnpmpublish](https://www.npmjs.com/package/libnpmpublish), 
+[libnpmpack](https://www.npmjs.com/package/libnpmpack))
+that the npm cli uses to publish packages.
+
 ## Installation
 
 ```bash
