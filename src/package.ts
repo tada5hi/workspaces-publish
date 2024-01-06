@@ -53,10 +53,12 @@ export async function publishPackage(pkg: Package, options: PackagePublishOption
 
         return true;
     } catch (e) {
+        /* istanbul ignore next */
         if (isNpmJsPublishVersionConflict(e) || isNpmPkgGitHubPublishVersionConflict(e)) {
             return false;
         }
 
+        /* istanbul ignore next */
         throw e;
     }
 }
