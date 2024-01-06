@@ -9,7 +9,7 @@ This library facilitates the publication of packages encompassing multiple works
 It determines the unpublished packages by checking each package manifest of the registry,
 if one already exists.
 
-The library is based on the packages 
+It is based on the packages 
 ([pacote](https://www.npmjs.com/package/pacote), 
 [libnpmpublish](https://www.npmjs.com/package/libnpmpublish), 
 [libnpmpack](https://www.npmjs.com/package/libnpmpack))
