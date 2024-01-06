@@ -1,3 +1,16 @@
+# [1.2.0](https://github.com/tada5hi/workspaces-publish/compare/v1.1.0...v1.2.0) (2024-01-06)
+
+
+### Bug Fixes
+
+* add rootPackage option to cli ([c4c571f](https://github.com/tada5hi/workspaces-publish/commit/c4c571fc34c43db297d161dacb17764c0c390079))
+* only track packages with name and version attribute ([09635e3](https://github.com/tada5hi/workspaces-publish/commit/09635e3c65944d9785aee9a81dd2614989138de2))
+
+
+### Features
+
+* support root package publishing + refactored code base ([34bad2f](https://github.com/tada5hi/workspaces-publish/commit/34bad2fe35155324423d587e71fe2cfa5a499835))
+
 # [1.1.0](https://github.com/tada5hi/workspaces-publish/compare/v1.0.2...v1.1.0) (2023-12-18)
 
 
