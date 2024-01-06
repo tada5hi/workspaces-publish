@@ -18,7 +18,13 @@ cli
     .option('--root <root>', 'Root directory', {
         default: process.cwd(),
     })
-    .action(async (options: { token: string, registry: string, root: string}) => {
+    .option('--rootPackage', 'Also consider the root package for publishing')
+    .action(async (options: {
+        token: string,
+        registry: string,
+        root: string,
+        rootPackage?: boolean
+    }) => {
         try {
             const packages = await publish({
                 token: options.token,
