@@ -20,3 +20,10 @@ export type PackagePublishOptions = {
     token?: string,
     registry?: string,
 };
+
+export type PublishContext = {
+    cwd?: string,
+    rootPackage?: boolean,
+    registry?: string,
+    token?: string
+};

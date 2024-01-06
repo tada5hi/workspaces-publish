@@ -20,7 +20,8 @@ npm install workspaces-publish --save
 npx workspaces-publish \
   --token <token> \
   --registry <registry> \
-  --root <root>
+  --root <root> \
+  --rootPackage <rootPackage>
 ```
 
 ### token
@@ -37,3 +38,10 @@ npx workspaces-publish \
 - Type: `String`
 - Default: `process.cwd()`
 - Description: Directory where the root package.json is located.
+
+### rootPackage
+- Type: `Boolean`
+- Default: `true`
+- Description: Also consider the root package for publishing.
+  Also consider the root package for publishing. The library still 
+  checks whether a Name & Version property is set and whether the private property evaluates to false.

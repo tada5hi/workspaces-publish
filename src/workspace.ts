@@ -1,9 +1,12 @@
-import consola from 'consola';
 import { glob } from 'glob';
+import { isPackagePublishable } from './package';
 import { readPackageJson } from './package-json';
 import type { Package } from './types';
 
-export async function readWorkspacePackages(workspace: string | string[], cwd?: string) : Promise<Package[]> {
+export async function readWorkspacePackages(
+    workspace: string | string[],
+    cwd?: string,
+): Promise<Package[]> {
     const directories = await glob(workspace, {
         ignore: ['node_modules/**'],
         cwd,
@@ -15,25 +18,12 @@ export async function readWorkspacePackages(workspace: string | string[], cwd?: 
     for (let i = 0; i < directories.length; i++) {
         const pkg = await readPackageJson(directories[i]);
 
-        if (!pkg.name) {
-            consola.info(`${pkg.name} has no version attribute`);
-            continue;
+        if (isPackagePublishable(pkg)) {
+            pkgs.push({
+                path: directories[i],
+                content: pkg,
+            });
         }
-
-        if (pkg.private) {
-            consola.info(`${pkg.name} is private and won't be published`);
-            continue;
-        }
-
-        if (!pkg.version) {
-            consola.info(`${pkg.name} has no name attribute`);
-            continue;
-        }
-
-        pkgs.push({
-            path: directories[i],
-            content: pkg,
-        });
     }
 
     return pkgs;

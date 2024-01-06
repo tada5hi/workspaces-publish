@@ -1,8 +1,8 @@
-import pacote from 'pacote';
-import libnpmpublish from 'libnpmpublish';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 import libnpmpack from 'libnpmpack';
-import type { Package, PackagePublishOptions } from './types';
+import libnpmpublish from 'libnpmpublish';
+import pacote from 'pacote';
+import type { Package, PackageJson, PackagePublishOptions } from './types';
 import { isNpmJsPublishVersionConflict, isNpmPkgGitHubPublishVersionConflict } from './utils';
 
 export async function getUnpublishedPackages(packages: Package[]) {
@@ -70,4 +70,10 @@ export async function publishPackages(pkgs: Package[], options: PackagePublishOp
     }
 
     return pkgs;
+}
+
+export function isPackagePublishable(pkg: PackageJson): boolean {
+    return !!pkg.name &&
+        !pkg.private &&
+        !!pkg.version;
 }
