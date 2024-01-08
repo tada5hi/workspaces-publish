@@ -1,4 +1,4 @@
-import { glob } from 'glob';
+import fg from 'fast-glob';
 import { isPackagePublishable } from './package';
 import { readPackageJson } from './package-json';
 import type { Package } from './types';
@@ -7,10 +7,11 @@ export async function readWorkspacePackages(
     workspace: string | string[],
     cwd?: string,
 ): Promise<Package[]> {
-    const directories = await glob(workspace, {
+    const directories = await fg(workspace, {
         ignore: ['node_modules/**'],
         cwd,
         absolute: true,
+        onlyDirectories: true,
     });
 
     const pkgs : Package[] = [];
