@@ -1,3 +1,10 @@
+# [1.3.0](https://github.com/tada5hi/workspaces-publish/compare/v1.2.0...v1.3.0) (2024-01-08)
+
+
+### Features
+
+* use fast-glob for pattern matching ([c9b71ea](https://github.com/tada5hi/workspaces-publish/commit/c9b71ea83173db5e1c72fe6eaf6bf6ae00f973ed))
+
 # [1.2.0](https://github.com/tada5hi/workspaces-publish/compare/v1.1.0...v1.2.0) (2024-01-06)
 
 
