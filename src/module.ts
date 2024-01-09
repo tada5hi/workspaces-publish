@@ -1,5 +1,5 @@
 import { REGISTRY_URL } from './constants';
-import { getUnpublishedPackages, publishPackages } from './package';
+import { getUnpublishedPackages, isPackagePublishable, publishPackages } from './package';
 import { readPackageJson } from './package-json';
 import type { Package, PublishContext } from './types';
 import { readWorkspacePackages } from './workspace';
@@ -22,7 +22,10 @@ export async function publish(ctx: PublishContext = {}) : Promise<Package[]> {
         return [];
     }
 
-    if (rootPackage) {
+    if (
+        rootPackage &&
+        isPackagePublishable(pkg)
+    ) {
         packages.push({
             path: cwd,
             content: pkg,
