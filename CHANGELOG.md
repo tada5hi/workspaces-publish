@@ -1,3 +1,10 @@
+## [1.4.1](https://github.com/tada5hi/workspaces-publish/compare/v1.4.0...v1.4.1) (2024-01-09)
+
+
+### Bug Fixes
+
+* only include root package if it is publishable ([dcd11a9](https://github.com/tada5hi/workspaces-publish/commit/dcd11a98d94ec2a6c55d1c9a04b2c917c3ada8d0))
+
 # [1.4.0](https://github.com/tada5hi/workspaces-publish/compare/v1.3.0...v1.4.0) (2024-01-09)
 
 
