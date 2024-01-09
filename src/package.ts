@@ -1,6 +1,7 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 import libnpmpack from 'libnpmpack';
 import libnpmpublish from 'libnpmpublish';
+import path from 'node:path';
 import { getPackument } from './packument';
 import type { Package, PackageJson, PackagePublishOptions } from './types';
 import { isNpmJsPublishVersionConflict, isNpmPkgGitHubPublishVersionConflict } from './utils';
@@ -37,7 +38,14 @@ export async function getUnpublishedPackages(
 }
 
 export async function publishPackage(pkg: Package, options: PackagePublishOptions): Promise<boolean> {
-    const tarData = await libnpmpack(pkg.path);
+    let pkgPath : string;
+    if (path.isAbsolute(pkg.path)) {
+        pkgPath = pkg.path;
+    } else {
+        pkgPath = path.resolve(pkg.path);
+    }
+
+    const tarData = await libnpmpack(pkgPath);
 
     const publishOptions : Record<string, any> = {};
     if (options.token) {

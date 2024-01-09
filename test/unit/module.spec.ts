@@ -1,29 +1,23 @@
-import pacote from 'pacote';
+import hapic from 'hapic';
 import libnpmpublish from 'libnpmpublish';
 import { publish } from '../../src';
 
-let packumentMock : jest.SpyInstance;
-let manifestMock : jest.SpyInstance;
-let tarballMock : jest.SpyInstance;
 let publishMock : jest.SpyInstance;
+let hapicMock : jest.SpyInstance;
 
 describe('src/module', () => {
     beforeEach(() => {
         jest.clearAllMocks();
 
-        packumentMock = jest.spyOn(pacote, 'packument').mockImplementation();
-        manifestMock = jest.spyOn(pacote, 'manifest').mockImplementation();
-        tarballMock = jest.spyOn(pacote, 'tarball').mockImplementation();
         publishMock = jest.spyOn(libnpmpublish, 'publish').mockImplementation();
+        hapicMock = jest.spyOn(hapic, 'get').mockImplementation();
     });
 
     it('should publish packages', async () => {
-        packumentMock.mockImplementation(() => ({
-            versions: [],
-        }));
-        manifestMock.mockImplementation(() => ({}));
-        tarballMock.mockImplementation(() => ({}));
         publishMock.mockImplementation(() => true);
+        hapicMock.mockImplementation(() => ({
+            versions: {},
+        }));
 
         const packages = await publish({
             cwd: 'test/data',
