@@ -1,9 +1,9 @@
 export type PackageJson = {
-    name?: string;
+    name: string;
 
     private?: boolean,
 
-    version?: string;
+    version: string;
 
     publishConfig?: Record<string, any>,
 
@@ -17,8 +17,19 @@ export type Package = {
 };
 
 export type PackagePublishOptions = {
-    token?: string,
-    registry?: string,
+    token: string,
+    registry: string,
+};
+
+export type PackumentVersion = {
+    name: string,
+    version: string
+};
+
+export type Packument = {
+    name: string,
+    'dist-tags' : Record<string, string>,
+    versions: Record<string, PackumentVersion>
 };
 
 export type PublishContext = {

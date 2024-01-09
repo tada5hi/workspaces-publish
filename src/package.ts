@@ -1,11 +1,14 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 import libnpmpack from 'libnpmpack';
 import libnpmpublish from 'libnpmpublish';
-import pacote from 'pacote';
+import { getPackument } from './packument';
 import type { Package, PackageJson, PackagePublishOptions } from './types';
 import { isNpmJsPublishVersionConflict, isNpmPkgGitHubPublishVersionConflict } from './utils';
 
-export async function getUnpublishedPackages(packages: Package[]) {
+export async function getUnpublishedPackages(
+    packages: Package[],
+    publishOptions: Partial<PackagePublishOptions> = {},
+) {
     const output : Package[] = [];
 
     for (let i = 0; i < packages.length; i++) {
@@ -17,7 +20,7 @@ export async function getUnpublishedPackages(packages: Package[]) {
         let exists = true;
 
         try {
-            const { versions } = await pacote.packument(name);
+            const { versions } = await getPackument(name, publishOptions);
             if (typeof versions === 'undefined' || typeof versions[version] === 'undefined') {
                 exists = false;
             }
@@ -34,7 +37,6 @@ export async function getUnpublishedPackages(packages: Package[]) {
 }
 
 export async function publishPackage(pkg: Package, options: PackagePublishOptions): Promise<boolean> {
-    const manifest = await pacote.manifest(pkg.path);
     const tarData = await libnpmpack(pkg.path);
 
     const publishOptions : Record<string, any> = {};
@@ -46,7 +48,7 @@ export async function publishPackage(pkg: Package, options: PackagePublishOption
     }
 
     try {
-        await libnpmpublish.publish(manifest as any, tarData, {
+        await libnpmpublish.publish(pkg.content, tarData, {
             ...publishOptions,
             ...(pkg.content.publishConfig ? { ...pkg.content.publishConfig } : {}),
         });

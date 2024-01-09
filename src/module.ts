@@ -1,3 +1,4 @@
+import { REGISTRY_URL } from './constants';
 import { getUnpublishedPackages, publishPackages } from './package';
 import { readPackageJson } from './package-json';
 import type { Package, PublishContext } from './types';
@@ -32,12 +33,16 @@ export async function publish(ctx: PublishContext = {}) : Promise<Package[]> {
         packages.push(...await readWorkspacePackages(pkg.workspaces!, cwd));
     }
 
-    packages = await getUnpublishedPackages(packages);
+    packages = await getUnpublishedPackages(packages, {
+        token: ctx.token,
+        registry: ctx.registry,
+    });
+
     if (packages.length === 0) {
         return [];
     }
 
-    const registry = ctx.registry || 'https://registry.npmjs.org/';
+    const registry = ctx.registry || REGISTRY_URL;
     await publishPackages(packages, {
         token,
         registry,

@@ -10,8 +10,7 @@ It determines the unpublished packages by checking each package manifest of the 
 if one already exists.
 
 It is based on the packages 
-([pacote](https://www.npmjs.com/package/pacote), 
-[libnpmpublish](https://www.npmjs.com/package/libnpmpublish), 
+([libnpmpublish](https://www.npmjs.com/package/libnpmpublish), 
 [libnpmpack](https://www.npmjs.com/package/libnpmpack))
 that the npm cli uses to publish packages.
 
