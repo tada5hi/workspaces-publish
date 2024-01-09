@@ -9,6 +9,9 @@ This library facilitates the publication of packages encompassing multiple works
 It determines the unpublished packages by checking each package manifest of the registry,
 if one already exists.
 
+At best, it should be used with a library that increments the version of the packages beforehand 
+(e.g. [release-please](https://github.com/googleapis/release-please)).
+
 It is based on the packages 
 ([libnpmpublish](https://www.npmjs.com/package/libnpmpublish), 
 [libnpmpack](https://www.npmjs.com/package/libnpmpack))
