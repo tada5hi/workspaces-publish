@@ -1,3 +1,15 @@
+# [1.4.0](https://github.com/tada5hi/workspaces-publish/compare/v1.3.0...v1.4.0) (2024-01-09)
+
+
+### Bug Fixes
+
+* resolving package path for npmpack ([b3b87df](https://github.com/tada5hi/workspaces-publish/commit/b3b87dfb61df5a130bc4ed70c8a702b5977e208a))
+
+
+### Features
+
+* replaced pacote with internal implementation ([c7b1280](https://github.com/tada5hi/workspaces-publish/commit/c7b128088c0e1abfc23312901069b41b7cc54e83))
+
 # [1.3.0](https://github.com/tada5hi/workspaces-publish/compare/v1.2.0...v1.3.0) (2024-01-08)
 
 
