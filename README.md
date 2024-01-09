@@ -26,7 +26,7 @@ that the npm cli uses to publish packages.
 ## Installation
 
 ```bash
-npm install workspaces-publish --save
+npm install workspaces-publish --save-dev
 ```
 
 ## Usage
