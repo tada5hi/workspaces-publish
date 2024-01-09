@@ -14,6 +14,12 @@ It is based on the packages
 [libnpmpack](https://www.npmjs.com/package/libnpmpack))
 that the npm cli uses to publish packages.
 
+**Table of Contents**
+- [Installation](#installation)
+- [Documentation](#documentation)
+- [Usage](#usage)
+- [CI](#ci)
+
 ## Installation
 
 ```bash
@@ -50,3 +56,50 @@ npx workspaces-publish \
 - Default: `true`
 - Description: Also consider the root package for publishing. The library still 
   checks whether a name- & version-property is set and whether the private property evaluates to false.
+
+
+## CI
+
+### GitHub Action
+The library can also be used in combination with [release-please](https://github.com/googleapis/release-please),
+as release-please only increases the versions in the monorepo, but does not release the packages.
+
+```yaml
+on:
+    push:
+        branches:
+            - main
+
+permissions:
+    contents: write
+    pull-requests: write
+
+jobs:
+    release:
+        runs-on: ubuntu-latest
+        steps:
+            -   uses: google-github-actions/release-please-action@v4
+                id: release
+                with:
+                    token: ${{ secrets.GITHUB_TOKEN }}
+
+            -   name: Checkout
+                if: steps.release.outputs.releases_created == 'true'
+                uses: actions/checkout@v4
+
+            -   name: Install Node.JS
+                if: steps.release.outputs.releases_created == 'true'
+                uses: actions/setup-node@v4
+                with:
+                    node-version: 18
+            
+            -   name: Install dependencies
+                if: steps.release.outputs.releases_created == 'true'
+                run: npm ci
+
+            -   name: Publish
+                if: steps.release.outputs.releases_created == 'true'
+                run: npx workspaces-publish
+                env:
+                    NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+```
