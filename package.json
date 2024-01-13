@@ -54,7 +54,7 @@
         "consola": "^3.2.3",
         "fast-glob": "^3.3.2",
         "hapic": "^2.5.0",
-        "libnpmpack": "^6.0.4",
+        "libnpmpack": "^6.0.5",
         "libnpmpublish": "^9.0.3"
     },
     "devDependencies": {
