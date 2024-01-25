@@ -55,7 +55,7 @@
         "fast-glob": "^3.3.2",
         "hapic": "^2.5.0",
         "libnpmpack": "^6.0.5",
-        "libnpmpublish": "^9.0.3"
+        "libnpmpublish": "^9.0.4"
     },
     "devDependencies": {
         "@rollup/plugin-node-resolve": "^15.2.3",
