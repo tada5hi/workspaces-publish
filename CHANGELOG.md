@@ -1,3 +1,12 @@
+## [1.4.2](https://github.com/tada5hi/workspaces-publish/compare/v1.4.1...v1.4.2) (2024-01-25)
+
+
+### Bug Fixes
+
+* **deps:** bump hapic from 2.4.0 to 2.5.0 ([#14](https://github.com/tada5hi/workspaces-publish/issues/14)) ([94656f2](https://github.com/tada5hi/workspaces-publish/commit/94656f2d17c35f1107d1dc02eae9172159e8ebc5))
+* **deps:** bump libnpmpack from 6.0.4 to 6.0.5 ([#15](https://github.com/tada5hi/workspaces-publish/issues/15)) ([4d0cb08](https://github.com/tada5hi/workspaces-publish/commit/4d0cb08f7962e9d8a1bdd480bf32af8a036b87b1))
+* safe explore workspaces ([dd421d5](https://github.com/tada5hi/workspaces-publish/commit/dd421d5a348ddc980a124013eca0bcf66801d842))
+
 ## [1.4.1](https://github.com/tada5hi/workspaces-publish/compare/v1.4.0...v1.4.1) (2024-01-09)
 
 
