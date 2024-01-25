@@ -17,13 +17,17 @@ export async function readWorkspacePackages(
     const pkgs : Package[] = [];
 
     for (let i = 0; i < directories.length; i++) {
-        const pkg = await readPackageJson(directories[i]);
+        try {
+            const pkg = await readPackageJson(directories[i]);
 
-        if (isPackagePublishable(pkg)) {
-            pkgs.push({
-                path: directories[i],
-                content: pkg,
-            });
+            if (isPackagePublishable(pkg)) {
+                pkgs.push({
+                    path: directories[i],
+                    content: pkg,
+                });
+            }
+        } catch (e) {
+            // leave this unhandled.
         }
     }
 
