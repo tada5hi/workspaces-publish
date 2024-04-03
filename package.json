@@ -62,7 +62,7 @@
         "@rollup/plugin-swc": "^0.3.0",
         "@swc/core": "^1.4.11",
         "@swc/jest": "^0.2.31",
-        "@tada5hi/commitlint-config": "^1.1.5",
+        "@tada5hi/commitlint-config": "^1.2.0",
         "@tada5hi/eslint-config-typescript": "^1.2.10",
         "@tada5hi/semantic-release": "^0.3.1",
         "@tada5hi/tsconfig": "^0.5.0",
