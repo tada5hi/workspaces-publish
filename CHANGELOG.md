@@ -1,3 +1,11 @@
+## [1.4.3](https://github.com/tada5hi/workspaces-publish/compare/v1.4.2...v1.4.3) (2024-04-03)
+
+
+### Bug Fixes
+
+* **deps:** bump libnpmpack from 6.0.5 to 6.0.8 ([#79](https://github.com/tada5hi/workspaces-publish/issues/79)) ([9ddde4e](https://github.com/tada5hi/workspaces-publish/commit/9ddde4ef90074a04fa9831e378cb1ac00b94ef2e))
+* **deps:** bump libnpmpublish from 9.0.3 to 9.0.5 ([#80](https://github.com/tada5hi/workspaces-publish/issues/80)) ([e9e4609](https://github.com/tada5hi/workspaces-publish/commit/e9e4609044b22f3366318b3629d1581cf7cefa73))
+
 ## [1.4.2](https://github.com/tada5hi/workspaces-publish/compare/v1.4.1...v1.4.2) (2024-01-25)
 
 
