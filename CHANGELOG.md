@@ -1,3 +1,12 @@
+## [1.4.4](https://github.com/tada5hi/workspaces-publish/compare/v1.4.3...v1.4.4) (2024-05-20)
+
+
+### Bug Fixes
+
+* **deps:** bump hapic from 2.5.0 to 2.5.1 ([#86](https://github.com/tada5hi/workspaces-publish/issues/86)) ([dc057df](https://github.com/tada5hi/workspaces-publish/commit/dc057dfc4363fd318375208a200eb35d78d51d88))
+* **deps:** bump libnpmpack from 6.0.8 to 7.0.2 ([#126](https://github.com/tada5hi/workspaces-publish/issues/126)) ([fd1a0a0](https://github.com/tada5hi/workspaces-publish/commit/fd1a0a0887e2090307576a7c3bc083b3e76088cb))
+* **deps:** bump libnpmpublish from 9.0.5 to 9.0.8 ([#128](https://github.com/tada5hi/workspaces-publish/issues/128)) ([2abd0e0](https://github.com/tada5hi/workspaces-publish/commit/2abd0e05409432c134ca39d7a61bd08e1fffc2e9))
+
 ## [1.4.3](https://github.com/tada5hi/workspaces-publish/compare/v1.4.2...v1.4.3) (2024-04-03)
 
 
