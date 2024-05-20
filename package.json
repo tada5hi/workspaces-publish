@@ -53,7 +53,7 @@
         "cac": "^6.7.14",
         "consola": "^3.2.3",
         "fast-glob": "^3.3.2",
-        "hapic": "^2.5.0",
+        "hapic": "^2.5.1",
         "libnpmpack": "^7.0.2",
         "libnpmpublish": "^9.0.5"
     },
