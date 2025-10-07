@@ -67,13 +67,14 @@ function updatePackageDependencies(
 
                 // todo: respect version by path or explicit version
             }
-
-            continue;
         }
 
+        /*
+        todo: check if it is a plain version
         if (value !== depPkg.content.version) {
             dependencies[keys[i]] = depPkg.content.version;
             pkg.modified = true;
         }
+         */
     }
 }
