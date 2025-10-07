@@ -7,13 +7,21 @@ export type PackageJson = {
 
     publishConfig?: Record<string, any>,
 
-    workspaces?: string[]
+    workspaces?: string[],
+
+    dependencies?: Record<string, string>,
+
+    peerDependencies?: Record<string, string>,
+
+    devDependencies?: Record<string, string>,
 };
 
 export type Package = {
     path: string;
     content: PackageJson,
-    published?: boolean
+    published?: boolean,
+    publishable?: boolean,
+    modified?: boolean
 };
 
 export type PackagePublishOptions = {
@@ -32,9 +40,10 @@ export type Packument = {
     versions: Record<string, PackumentVersion>
 };
 
-export type PublishContext = {
+export type PublishOptions = {
     cwd?: string,
     rootPackage?: boolean,
     registry?: string,
-    token?: string
+    token?: string,
+    dryRun?: boolean,
 };
