@@ -1,18 +1,22 @@
+import path from 'node:path';
 import { REGISTRY_URL } from './constants';
-import { getUnpublishedPackages, isPackagePublishable, publishPackages } from './package';
-import { readPackageJson } from './package-json';
-import type { Package, PublishContext } from './types';
+import {
+    isPackagePublishable, isPackagePublished, publishPackages,
+} from './package';
+import { readPackageJson, writePackageJson } from './package-json';
+import type { Package, PublishOptions } from './types';
+import { updatePackagesDependencies } from './package-dependency';
 import { readWorkspacePackages } from './workspace';
 
-export async function publish(ctx: PublishContext = {}) : Promise<Package[]> {
-    const token = ctx.token || process.env.NODE_AUTH_TOKEN;
+export async function publish(options: PublishOptions = {}) : Promise<Package[]> {
+    const token = options.token || process.env.NODE_AUTH_TOKEN;
     if (!token) {
         throw new Error('A token must be provided.');
     }
 
-    const cwd = ctx.cwd || process.cwd();
-    const rootPackage = ctx.rootPackage ?? true;
-    let packages : Package[] = [];
+    const cwd = options.cwd || process.cwd();
+    const rootPackage = options.rootPackage ?? true;
+    const packages : Package[] = [];
 
     const pkg = await readPackageJson(cwd);
     if (
@@ -22,12 +26,9 @@ export async function publish(ctx: PublishContext = {}) : Promise<Package[]> {
         return [];
     }
 
-    if (
-        rootPackage &&
-        isPackagePublishable(pkg)
-    ) {
+    if (rootPackage) {
         packages.push({
-            path: cwd,
+            path: path.resolve(cwd),
             content: pkg,
         });
     }
@@ -36,20 +37,37 @@ export async function publish(ctx: PublishContext = {}) : Promise<Package[]> {
         packages.push(...await readWorkspacePackages(pkg.workspaces!, cwd));
     }
 
-    packages = await getUnpublishedPackages(packages, {
-        token: ctx.token,
-        registry: ctx.registry,
-    });
+    updatePackagesDependencies(packages);
 
-    if (packages.length === 0) {
+    const unpublishedPackages : Package[] = [];
+    for (let i = 0; i < packages.length; i++) {
+        const pkg = packages[i];
+
+        if (!isPackagePublishable(pkg)) {
+            continue;
+        }
+
+        const isPublished = await isPackagePublished(pkg);
+        if (isPublished) {
+            continue;
+        }
+
+        if (pkg.modified && !options.dryRun) {
+            await writePackageJson(pkg.path, pkg.content);
+        }
+
+        unpublishedPackages.push(pkg);
+    }
+
+    if (unpublishedPackages.length === 0) {
         return [];
     }
 
-    const registry = ctx.registry || REGISTRY_URL;
-    await publishPackages(packages, {
+    const registry = options.registry || REGISTRY_URL;
+    await publishPackages(unpublishedPackages, {
         token,
         registry,
     });
 
-    return packages.filter((pkg) => !!pkg.published);
+    return unpublishedPackages.filter((pkg) => !!pkg.published);
 }
