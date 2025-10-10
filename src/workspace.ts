@@ -1,5 +1,5 @@
 import fg from 'fast-glob';
-import { isPackagePublishable } from './package';
+import path from 'node:path';
 import { readPackageJson } from './package-json';
 import type { Package } from './types';
 
@@ -20,12 +20,10 @@ export async function readWorkspacePackages(
         try {
             const pkg = await readPackageJson(directories[i]);
 
-            if (isPackagePublishable(pkg)) {
-                pkgs.push({
-                    path: directories[i],
-                    content: pkg,
-                });
-            }
+            pkgs.push({
+                path: path.resolve(directories[i]),
+                content: pkg,
+            });
         } catch (e) {
             // leave this unhandled.
         }

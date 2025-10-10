@@ -3,38 +3,28 @@ import libnpmpack from 'libnpmpack';
 import libnpmpublish from 'libnpmpublish';
 import path from 'node:path';
 import { getPackument } from './packument';
-import type { Package, PackageJson, PackagePublishOptions } from './types';
+import type { Package, PackagePublishOptions } from './types';
 import { isNpmJsPublishVersionConflict, isNpmPkgGitHubPublishVersionConflict } from './utils';
 
-export async function getUnpublishedPackages(
-    packages: Package[],
-    publishOptions: Partial<PackagePublishOptions> = {},
-) {
-    const output : Package[] = [];
+export async function isPackagePublished(pkg: Package, options: Partial<PackagePublishOptions> = {}) : Promise<boolean> {
+    const { name, version } = pkg.content;
 
-    for (let i = 0; i < packages.length; i++) {
-        const { name, version } = packages[i].content;
-        if (!name || !version) {
-            continue;
-        }
-
-        let exists = true;
-
-        try {
-            const { versions } = await getPackument(name, publishOptions);
-            if (typeof versions === 'undefined' || typeof versions[version] === 'undefined') {
-                exists = false;
-            }
-        } catch (e) {
-            exists = false;
-        }
-
-        if (!exists) {
-            output.push(packages[i]);
-        }
+    if (!name || !version) {
+        throw new Error(`Name or version attribute is missing in ${pkg.path}`);
     }
 
-    return output;
+    let exists = true;
+
+    try {
+        const { versions } = await getPackument(name, options);
+        if (typeof versions === 'undefined' || typeof versions[version] === 'undefined') {
+            exists = false;
+        }
+    } catch (e) {
+        exists = false;
+    }
+
+    return exists;
 }
 
 export async function publishPackage(pkg: Package, options: PackagePublishOptions): Promise<boolean> {
@@ -84,8 +74,8 @@ export async function publishPackages(pkgs: Package[], options: PackagePublishOp
     return pkgs;
 }
 
-export function isPackagePublishable(pkg: PackageJson): boolean {
-    return !!pkg.name &&
-        !pkg.private &&
-        !!pkg.version;
+export function isPackagePublishable(pkg: Package): boolean {
+    return !!pkg.content.name &&
+        !pkg.content.private &&
+        !!pkg.content.version;
 }

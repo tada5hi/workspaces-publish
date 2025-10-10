@@ -22,9 +22,17 @@ describe('src/module', () => {
         const packages = await publish({
             cwd: 'test/data',
             token: 'foo',
+            dryRun: true,
         });
 
         expect(packages.length).toEqual(2);
+
+        const [pkgRoot, pkgA] = packages;
+
+        expect(pkgRoot?.modified).toBeFalsy();
+
+        expect(pkgA?.modified).toBeTruthy();
+        expect(pkgA?.content?.dependencies?.['pkg-b']).toEqual('^1.0.0');
     });
 
     it('should throw on no token', async () => {
