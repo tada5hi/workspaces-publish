@@ -26,6 +26,8 @@ cli
         rootPackage?: boolean
     }) => {
         try {
+            process.env.NODE_AUTH_TOKEN = options.token;
+
             const packages = await publish({
                 token: options.token,
                 registry: options.registry,

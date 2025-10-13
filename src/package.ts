@@ -1,5 +1,6 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 import libnpmpack from 'libnpmpack';
+import type { PublishOptions } from 'libnpmpublish';
 import libnpmpublish from 'libnpmpublish';
 import path from 'node:path';
 import { getPackument } from './packument';
@@ -37,7 +38,10 @@ export async function publishPackage(pkg: Package, options: PackagePublishOption
 
     const tarData = await libnpmpack(pkgPath);
 
-    const publishOptions : Record<string, any> = {};
+    const publishOptions : PublishOptions = {
+        ...(pkg.content.publishConfig || {}),
+    };
+
     if (options.token) {
         const registry = options.registry || 'https://registry.npmjs.org/';
         const url = new URL(registry);
@@ -46,10 +50,7 @@ export async function publishPackage(pkg: Package, options: PackagePublishOption
     }
 
     try {
-        await libnpmpublish.publish(pkg.content, tarData, {
-            ...publishOptions,
-            ...(pkg.content.publishConfig ? { ...pkg.content.publishConfig } : {}),
-        });
+        await libnpmpublish.publish(pkg.content, tarData, publishOptions);
 
         return true;
     } catch (e) {
