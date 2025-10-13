@@ -25,14 +25,18 @@ describe('src/module', () => {
             dryRun: true,
         });
 
-        expect(packages.length).toEqual(2);
+        expect(packages.length).toEqual(3);
 
-        const [pkgRoot, pkgA] = packages;
+        const [pkgRoot, pkgA, pkgC] = packages;
 
         expect(pkgRoot?.modified).toBeFalsy();
 
         expect(pkgA?.modified).toBeTruthy();
         expect(pkgA?.content?.dependencies?.['pkg-b']).toEqual('^1.0.0');
+
+        expect(pkgC?.modified).toBeTruthy();
+        expect(pkgC?.content?.dependencies?.['pkg-b']).toEqual('~1.0.0');
+        expect(pkgC?.content?.peerDependencies?.['pkg-a']).toEqual('*');
     });
 
     it('should throw on no token', async () => {

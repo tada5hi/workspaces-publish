@@ -1,4 +1,5 @@
 import { hasOwnProperty } from 'hapic';
+import semver from 'semver';
 import type { Package } from './types';
 
 export function updatePackagesDependencies(packages: Package[]) {
@@ -29,6 +30,35 @@ function isWorkspaceProtocolValue(value: string) {
     return value.substring(0, 10) === 'workspace:';
 }
 
+function normalizeVersion(input: string, pkgVersion: string) : string {
+    if (input.length === 1) {
+        if (input === '~' || input === '^') {
+            return input + pkgVersion;
+        }
+
+        return pkgVersion;
+    }
+
+    const firstCharacter = input.substring(0, 1);
+    if (
+        firstCharacter === '*' ||
+        firstCharacter === '~' ||
+        firstCharacter === '^'
+    ) {
+        if (semver.valid(input.substring(1))) {
+            if (firstCharacter === '~' || firstCharacter === '^') {
+                return firstCharacter + pkgVersion;
+            }
+
+            return pkgVersion;
+        }
+
+        return pkgVersion;
+    }
+
+    return pkgVersion;
+}
+
 function updatePackageDependencies(
     pkg: Package,
     depType: 'dependencies' | 'devDependencies' | 'peerDependencies',
@@ -52,29 +82,8 @@ function updatePackageDependencies(
         if (isWorkspaceProtocolValue(value)) {
             value = value.substring(10);
 
-            const prefix = value.substring(0, 1);
-
-            if (value.length === 1) {
-                if (prefix === '*') {
-                    dependencies[keys[i]] = depPkg.content.version;
-                    pkg.modified = true;
-                } else if (prefix === '~' || prefix === '^') {
-                    dependencies[keys[i]] = prefix + depPkg.content.version;
-                    pkg.modified = true;
-                }
-            } else {
-                value = value.substring(1);
-
-                // todo: respect version by path or explicit version
-            }
-        }
-
-        /*
-        todo: check if it is a plain version
-        if (value !== depPkg.content.version) {
-            dependencies[keys[i]] = depPkg.content.version;
+            dependencies[keys[i]] = normalizeVersion(value, depPkg.content.version);
             pkg.modified = true;
         }
-         */
     }
 }

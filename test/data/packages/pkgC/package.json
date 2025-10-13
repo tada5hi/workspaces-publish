@@ -1,0 +1,10 @@
+{
+    "name": "pkg-c",
+    "version": "1.0.0",
+    "dependencies": {
+        "pkg-b": "workspace:~"
+    },
+    "peerDependencies": {
+        "pkg-a": "*"
+    }
+}
