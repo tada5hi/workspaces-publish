@@ -55,7 +55,8 @@
         "fast-glob": "^3.3.3",
         "hapic": "^2.8.0",
         "libnpmpack": "^9.0.9",
-        "libnpmpublish": "^11.1.2"
+        "libnpmpublish": "^11.1.2",
+        "semver": "^7.7.3"
     },
     "devDependencies": {
         "@rollup/plugin-node-resolve": "^16.0.2",
@@ -69,13 +70,13 @@
         "@types/libnpmpublish": "^9.0.1",
         "@types/node": "^24.7.1",
         "@types/pacote": "^11.1.8",
+        "@types/semver": "^7.7.1",
         "cross-env": "^10.1.0",
         "eslint": "^8.54.0",
         "husky": "^9.1.7",
         "jest": "^30.2.0",
         "rollup": "^4.52.4",
         "semantic-release": "^24.2.9",
-        "semver": "^7.7.3",
         "ts-node": "^10.9.2",
         "typescript": "^5.9.3"
     }
