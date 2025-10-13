@@ -13,24 +13,24 @@ export function updatePackagesDependencies(packages: Package[]) {
         const pkg = packages[i];
 
         if (pkg.content.dependencies) {
-            updatePackageDependencies(pkg, 'dependencies', pkgDir);
+            updatePackageDependenciesByType(pkg, 'dependencies', pkgDir);
         }
 
         if (pkg.content.devDependencies) {
-            updatePackageDependencies(pkg, 'devDependencies', pkgDir);
+            updatePackageDependenciesByType(pkg, 'devDependencies', pkgDir);
         }
 
         if (pkg.content.peerDependencies) {
-            updatePackageDependencies(pkg, 'peerDependencies', pkgDir);
+            updatePackageDependenciesByType(pkg, 'peerDependencies', pkgDir);
         }
     }
 }
 
-function isWorkspaceProtocolValue(value: string) {
+function isDependencyWorkspaceProtocolValue(value: string) {
     return value.substring(0, 10) === 'workspace:';
 }
 
-function normalizeVersion(input: string, pkgVersion: string) : string {
+function normalizeDependencyVersionValue(input: string, pkgVersion: string) : string {
     if (input.length === 1) {
         if (input === '~' || input === '^') {
             return input + pkgVersion;
@@ -59,7 +59,7 @@ function normalizeVersion(input: string, pkgVersion: string) : string {
     return pkgVersion;
 }
 
-function updatePackageDependencies(
+function updatePackageDependenciesByType(
     pkg: Package,
     depType: 'dependencies' | 'devDependencies' | 'peerDependencies',
     pkgDir: Record<string, Package>,
@@ -79,10 +79,10 @@ function updatePackageDependencies(
 
         let value = dependencies[keys[i]];
 
-        if (isWorkspaceProtocolValue(value)) {
+        if (isDependencyWorkspaceProtocolValue(value)) {
             value = value.substring(10);
 
-            dependencies[keys[i]] = normalizeVersion(value, depPkg.content.version);
+            dependencies[keys[i]] = normalizeDependencyVersionValue(value, depPkg.content.version);
             pkg.modified = true;
         }
     }
