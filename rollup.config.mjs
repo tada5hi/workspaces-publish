@@ -50,7 +50,13 @@ export default [
             resolve({ extensions}),
 
             // Compile TypeScript/JavaScript files
-            swc()
+            swc({
+                swc: {
+                    jsc: {
+                        target: 'es2022'
+                    }
+                }
+            })
         ],
         output: [
             {

@@ -26,7 +26,11 @@ cli
         rootPackage?: boolean
     }) => {
         try {
-            process.env.NODE_AUTH_TOKEN = options.token;
+            if (options.token) {
+                process.env.NODE_AUTH_TOKEN = options.token;
+            } else {
+                consola.info('Attempt to publish without token.');
+            }
 
             const packages = await publish({
                 token: options.token,

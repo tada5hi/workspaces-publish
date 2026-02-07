@@ -42,7 +42,10 @@ export async function publishPackage(pkg: Package, options: PackagePublishOption
         ...(pkg.content.publishConfig || {}),
     };
 
-    if (options.token) {
+    if (
+        options.token &&
+        options.token.length > 0
+    ) {
         const registry = options.registry || 'https://registry.npmjs.org/';
         const url = new URL(registry);
 
