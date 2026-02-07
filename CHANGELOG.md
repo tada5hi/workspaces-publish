@@ -9,6 +9,24 @@
 * **deps:** bump libnpmpublish from 9.0.8 to 9.0.9 ([#131](https://github.com/tada5hi/workspaces-publish/issues/131)) ([10c2d17](https://github.com/tada5hi/workspaces-publish/commit/10c2d177b48f85538768fadfbf5499492e14a7b0))
 * **deps:** bump the minorandpatch group with 14 updates ([#297](https://github.com/tada5hi/workspaces-publish/issues/297)) ([3be75b1](https://github.com/tada5hi/workspaces-publish/commit/3be75b19e990a929dd61f51b3734e549f01c6f47))
 
+## [1.5.0](https://github.com/tada5hi/workspaces-publish/compare/v1.4.5...v1.5.0) (2026-02-07)
+
+
+### Features
+
+* support workflow protocol ([b19a86c](https://github.com/tada5hi/workspaces-publish/commit/b19a86c3227153c26d6c6cdcad52b3e4f7187d55))
+
+
+### Bug Fixes
+
+* add missing semver dependency ([9723669](https://github.com/tada5hi/workspaces-publish/commit/97236695019fa7ce388553572a138e7731468bf4))
+* **deps:** bump the minorandpatch group across 1 directory with 10 updates ([#308](https://github.com/tada5hi/workspaces-publish/issues/308)) ([f7a7920](https://github.com/tada5hi/workspaces-publish/commit/f7a7920aeeaa18f5d68af2d48815a49369e87031))
+* **deps:** bump the minorandpatch group across 1 directory with 11 updates ([#353](https://github.com/tada5hi/workspaces-publish/issues/353)) ([527f8c8](https://github.com/tada5hi/workspaces-publish/commit/527f8c8abf819a18e1d4bfd7a9f52a0545f343e8))
+* **deps:** bump the minorandpatch group with 9 updates ([#329](https://github.com/tada5hi/workspaces-publish/issues/329)) ([11e8d6d](https://github.com/tada5hi/workspaces-publish/commit/11e8d6d3e029d67e5d9d0eaa2297727ef9d0aa46))
+* enhance set version of workspace dependencies ([9492773](https://github.com/tada5hi/workspaces-publish/commit/9492773bde11e8665bf2e80f4ddcaaad51d58905))
+* remove non workspace protocol version update ([5aa40ce](https://github.com/tada5hi/workspaces-publish/commit/5aa40ce1b43f437f866e9c0ff85dd62a4645754a))
+* set token as env ([1a2a1fc](https://github.com/tada5hi/workspaces-publish/commit/1a2a1fc7f3e37043e91817598c404118adbeb1c8))
+
 ## [1.5.0](https://github.com/tada5hi/workspaces-publish/compare/v1.4.5...v1.5.0) (2025-10-13)
 
 
