@@ -28,8 +28,9 @@ cli
         try {
             if (options.token) {
                 process.env.NODE_AUTH_TOKEN = options.token;
+                consola.debug('Publishing with token');
             } else {
-                consola.info('Attempt to publish without token.');
+                consola.debug('Publishing without token');
             }
 
             const packages = await publish({
