@@ -9,6 +9,20 @@
 * **deps:** bump libnpmpublish from 9.0.8 to 9.0.9 ([#131](https://github.com/tada5hi/workspaces-publish/issues/131)) ([10c2d17](https://github.com/tada5hi/workspaces-publish/commit/10c2d177b48f85538768fadfbf5499492e14a7b0))
 * **deps:** bump the minorandpatch group with 14 updates ([#297](https://github.com/tada5hi/workspaces-publish/issues/297)) ([3be75b1](https://github.com/tada5hi/workspaces-publish/commit/3be75b19e990a929dd61f51b3734e549f01c6f47))
 
+## [1.6.0](https://github.com/tada5hi/workspaces-publish/compare/v1.5.0...v1.6.0) (2026-02-07)
+
+
+### Features
+
+* log if token is not provided ([906f1c2](https://github.com/tada5hi/workspaces-publish/commit/906f1c23a4b079591cda70c4439de8650c15d7cd))
+
+
+### Bug Fixes
+
+* **deps:** bump the minorandpatch group across 1 directory with 11 updates ([#353](https://github.com/tada5hi/workspaces-publish/issues/353)) ([527f8c8](https://github.com/tada5hi/workspaces-publish/commit/527f8c8abf819a18e1d4bfd7a9f52a0545f343e8))
+* explicit log if token is or is not provided ([9c63db5](https://github.com/tada5hi/workspaces-publish/commit/9c63db5ad5b5162689f9731e1d25b014bf482ecd))
+* set token as env ([1a2a1fc](https://github.com/tada5hi/workspaces-publish/commit/1a2a1fc7f3e37043e91817598c404118adbeb1c8))
+
 ## [1.5.0](https://github.com/tada5hi/workspaces-publish/compare/v1.4.5...v1.5.0) (2025-10-13)
 
 
