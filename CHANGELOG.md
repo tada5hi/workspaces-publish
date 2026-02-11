@@ -9,6 +9,13 @@
 * **deps:** bump libnpmpublish from 9.0.8 to 9.0.9 ([#131](https://github.com/tada5hi/workspaces-publish/issues/131)) ([10c2d17](https://github.com/tada5hi/workspaces-publish/commit/10c2d177b48f85538768fadfbf5499492e14a7b0))
 * **deps:** bump the minorandpatch group with 14 updates ([#297](https://github.com/tada5hi/workspaces-publish/issues/297)) ([3be75b1](https://github.com/tada5hi/workspaces-publish/commit/3be75b19e990a929dd61f51b3734e549f01c6f47))
 
+## [1.7.0](https://github.com/tada5hi/workspaces-publish/compare/v1.6.0...v1.7.0) (2026-02-11)
+
+
+### Features
+
+* don't require token + use named import ([93c4aa1](https://github.com/tada5hi/workspaces-publish/commit/93c4aa1c42b9f2d40cd92a981f1a808ecaa8fd0d))
+
 ## [1.6.0](https://github.com/tada5hi/workspaces-publish/compare/v1.5.0...v1.6.0) (2026-02-07)
 
 
