@@ -29,10 +29,6 @@ export default [
         ],
         output: [
             {
-                file: pkg.main,
-                format: 'cjs',
-                sourcemap: true
-            }, {
                 file: pkg.module,
                 format: 'esm',
                 sourcemap: true,
@@ -61,12 +57,7 @@ export default [
         output: [
             {
                 file: pkg.bin['workspaces-publish'],
-                format: 'cjs',
-                sourcemap: true
-            }, {
-                file: pkg.bin['workspaces-publish-esm'],
-                format: 'esm',
-                sourcemap: true,
+                format: 'esm'
             }
         ]
     }

@@ -1,5 +1,6 @@
 {
     "name": "workspaces-publish",
+    "type": "module",
     "version": "1.6.0",
     "description": "A library to publish packages of multiple workspaces.",
     "author": {
@@ -11,15 +12,12 @@
         "type": "git",
         "url": "https://github.com/tada5hi/workspaces-publish.git"
     },
-    "main": "dist/index.cjs",
-    "module": "dist/index.mjs",
-    "types": "dist/index.d.ts",
+    "module": "./dist/index.mjs",
     "exports": {
         "./package.json": "./package.json",
         ".": {
             "types": "./dist/index.d.ts",
-            "import": "./dist/index.mjs",
-            "require": "./dist/index.cjs"
+            "import": "./dist/index.mjs"
         }
     },
     "files": [
@@ -27,7 +25,7 @@
         "dist"
     ],
     "engines": {
-        "node": ">=14.0.0"
+        "node": ">=22.0.0"
     },
     "scripts": {
         "build:types": "tsc --emitDeclarationOnly",
@@ -45,8 +43,7 @@
     },
     "keywords": [],
     "bin": {
-        "workspaces-publish": "dist/cli.cjs",
-        "workspaces-publish-esm": "dist/cli.mjs"
+        "workspaces-publish": "dist/cli.mjs"
     },
     "license": "MIT",
     "dependencies": {

@@ -25,7 +25,7 @@ export type Package = {
 };
 
 export type PackagePublishOptions = {
-    token: string,
+    token?: string,
     registry: string,
 };
 

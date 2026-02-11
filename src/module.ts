@@ -10,9 +10,6 @@ import { readWorkspacePackages } from './workspace';
 
 export async function publish(options: PublishOptions = {}) : Promise<Package[]> {
     const token = options.token || process.env.NODE_AUTH_TOKEN;
-    if (!token) {
-        throw new Error('A token must be provided.');
-    }
 
     const cwd = options.cwd || process.cwd();
     const rootPackage = options.rootPackage ?? true;

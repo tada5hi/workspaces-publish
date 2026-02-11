@@ -1,17 +1,22 @@
 import {
     beforeEach, describe, expect, it, vi,
 } from 'vitest';
-import hapic from 'hapic';
-import libnpmpublish from 'libnpmpublish';
+import hapic, { isObject } from 'hapic';
 import { publish } from '../../src';
 
 describe('src/module', () => {
     beforeEach(() => {
         vi.clearAllMocks();
 
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        vi.spyOn(libnpmpublish, 'publish').mockImplementation(async () => true);
+        vi.mock('libnpmpublish', async (importOriginal) => {
+            const mod = await importOriginal();
+
+            return {
+                ...(isObject(mod) ? mod : {}),
+                publish: () => Promise.resolve(),
+            };
+        });
+
         vi.spyOn(hapic, 'get').mockImplementation(
             async () => new Response(JSON.stringify({
                 versions: {},
@@ -38,15 +43,5 @@ describe('src/module', () => {
         expect(pkgC?.modified).toBeTruthy();
         expect(pkgC?.content?.dependencies?.['pkg-b']).toEqual('~1.0.0');
         expect(pkgC?.content?.peerDependencies?.['pkg-a']).toEqual('*');
-    });
-
-    it('should throw on no token', async () => {
-        try {
-            await publish({});
-            expect(0).toEqual(1);
-        } catch (e) {
-            expect(e).toBeDefined();
-            expect((e as Record<string, any>).message).toEqual('A token must be provided.');
-        }
     });
 });

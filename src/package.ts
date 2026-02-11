@@ -1,7 +1,7 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 import libnpmpack from 'libnpmpack';
 import type { PublishOptions } from 'libnpmpublish';
-import libnpmpublish from 'libnpmpublish';
+import { publish } from 'libnpmpublish';
 import path from 'node:path';
 import { getPackument } from './packument';
 import type { Package, PackagePublishOptions } from './types';
@@ -53,7 +53,7 @@ export async function publishPackage(pkg: Package, options: PackagePublishOption
     }
 
     try {
-        await libnpmpublish.publish(pkg.content, tarData, publishOptions);
+        await publish(pkg.content, tarData, publishOptions);
 
         return true;
     } catch (e) {
