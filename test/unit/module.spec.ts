@@ -1,24 +1,25 @@
+import {
+    beforeEach, describe, expect, it, vi,
+} from 'vitest';
 import hapic from 'hapic';
 import libnpmpublish from 'libnpmpublish';
 import { publish } from '../../src';
 
-let publishMock : jest.SpyInstance;
-let hapicMock : jest.SpyInstance;
-
 describe('src/module', () => {
     beforeEach(() => {
-        jest.clearAllMocks();
+        vi.clearAllMocks();
 
-        publishMock = jest.spyOn(libnpmpublish, 'publish').mockImplementation();
-        hapicMock = jest.spyOn(hapic, 'get').mockImplementation();
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        vi.spyOn(libnpmpublish, 'publish').mockImplementation(async () => true);
+        vi.spyOn(hapic, 'get').mockImplementation(
+            async () => new Response(JSON.stringify({
+                versions: {},
+            })),
+        );
     });
 
     it('should publish packages', async () => {
-        publishMock.mockImplementation(() => true);
-        hapicMock.mockImplementation(() => ({
-            versions: {},
-        }));
-
         const packages = await publish({
             cwd: 'test/data',
             token: 'foo',

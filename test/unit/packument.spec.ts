@@ -1,3 +1,6 @@
+import {
+    describe, expect, it,
+} from 'vitest';
 import { getPackument } from '../../src';
 
 describe('src/packument', () => {
