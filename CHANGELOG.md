@@ -9,6 +9,19 @@
 * **deps:** bump libnpmpublish from 9.0.8 to 9.0.9 ([#131](https://github.com/tada5hi/workspaces-publish/issues/131)) ([10c2d17](https://github.com/tada5hi/workspaces-publish/commit/10c2d177b48f85538768fadfbf5499492e14a7b0))
 * **deps:** bump the minorandpatch group with 14 updates ([#297](https://github.com/tada5hi/workspaces-publish/issues/297)) ([3be75b1](https://github.com/tada5hi/workspaces-publish/commit/3be75b19e990a929dd61f51b3734e549f01c6f47))
 
+## [1.8.0](https://github.com/tada5hi/workspaces-publish/compare/v1.7.0...v1.8.0) (2026-03-18)
+
+
+### Features
+
+* hexagonal architecture rewrite with OIDC trusted publishing support ([#370](https://github.com/tada5hi/workspaces-publish/issues/370)) ([082b36b](https://github.com/tada5hi/workspaces-publish/commit/082b36b2ba5c56c6592574b18f92c846cb1763b5))
+* prefer npm CLI publisher with libnpmpublish fallback ([#373](https://github.com/tada5hi/workspaces-publish/issues/373)) ([bb0d5e4](https://github.com/tada5hi/workspaces-publish/commit/bb0d5e40a87a26feb39c39374da8d33b44318722))
+
+
+### Bug Fixes
+
+* **deps:** bump the minorandpatch group across 1 directory with 7 updates ([#368](https://github.com/tada5hi/workspaces-publish/issues/368)) ([fdde1a7](https://github.com/tada5hi/workspaces-publish/commit/fdde1a75747a15195e2ea3732cca5a87355cf31a))
+
 ## [1.7.0](https://github.com/tada5hi/workspaces-publish/compare/v1.6.0...v1.7.0) (2026-02-11)
 
 
