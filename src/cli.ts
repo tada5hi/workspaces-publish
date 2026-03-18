@@ -17,9 +17,9 @@ import type { ITokenProvider } from './core';
 import { publish } from './module';
 import { isObject } from './utils';
 
-function resolveTokenProvider(cliToken?: string): ITokenProvider {
-    if (cliToken) {
-        return new MemoryTokenProvider(cliToken);
+function resolveTokenProvider(token?: string): ITokenProvider {
+    if (token && token.length > 0) {
+        return new MemoryTokenProvider(token);
     }
 
     const requestUrl = process.env.ACTIONS_ID_TOKEN_REQUEST_URL;
