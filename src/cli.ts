@@ -1,9 +1,41 @@
 #!/usr/bin/env node
 
+/*
+ * Copyright (c) 2026.
+ * Author Peter Placzek (tada5hi)
+ * For the full copyright and license information,
+ * view the LICENSE file that was distributed with this source code.
+ */
+
 import { cac } from 'cac';
-import consola from 'consola';
+import {
+    ChainTokenProvider, ConsolaLogger, EnvTokenProvider,
+    HapicRegistryClient, NodeFileSystem, NpmPublisher,
+    OidcTokenProvider, StaticTokenProvider,
+} from './core';
+import type { ITokenProvider } from './core';
 import { publish } from './module';
 import { isObject } from './utils';
+
+function resolveTokenProvider(cliToken?: string): ITokenProvider {
+    if (cliToken) {
+        return new StaticTokenProvider(cliToken);
+    }
+
+    const requestUrl = process.env.ACTIONS_ID_TOKEN_REQUEST_URL;
+    const requestToken = process.env.ACTIONS_ID_TOKEN_REQUEST_TOKEN;
+
+    if (requestUrl && requestToken) {
+        return new ChainTokenProvider([
+            new OidcTokenProvider({ requestUrl, requestToken }),
+            new EnvTokenProvider(),
+        ]);
+    }
+
+    return new EnvTokenProvider();
+}
+
+const logger = new ConsolaLogger();
 
 const cli = cac();
 
@@ -26,36 +58,35 @@ cli
         rootPackage?: boolean
     }) => {
         try {
+            const tokenProvider = resolveTokenProvider(options.token);
+
             if (options.token) {
                 process.env.NODE_AUTH_TOKEN = options.token;
-                consola.debug('Publishing with token');
-            } else {
-                consola.debug('Publishing without token');
             }
 
             const packages = await publish({
-                token: options.token,
                 registry: options.registry,
                 cwd: options.root,
-                rootPackage: true,
+                rootPackage: options.rootPackage ?? true,
+                fileSystem: new NodeFileSystem(),
+                registryClient: new HapicRegistryClient(),
+                publisher: new NpmPublisher(),
+                tokenProvider,
+                logger,
             });
 
             if (packages.length === 0) {
-                consola.info('No packages need to be published.');
+                logger.info('No packages need to be published.');
             }
 
             for (let i = 0; i < packages.length; i++) {
-                if (packages[i].published) {
-                    consola.success(`published ${packages[i].content.name}@${packages[i].content.version}`);
-                } else {
-                    consola.success(`already published ${packages[i].content.name}@${packages[i].content.version}`);
-                }
+                logger.success(`published ${packages[i].content.name}@${packages[i].content.version}`);
             }
 
             process.exit(0);
         } catch (e) {
             if (isObject(e)) {
-                consola.warn(e?.message || 'An unknown error occurred.');
+                logger.warn(e?.message || 'An unknown error occurred.');
             }
             process.exit(1);
         }

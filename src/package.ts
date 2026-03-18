@@ -1,44 +1,54 @@
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-import libnpmpack from 'libnpmpack';
-import type { PublishOptions } from 'libnpmpublish';
-import { publish } from 'libnpmpublish';
+/*
+ * Copyright (c) 2026.
+ * Author Peter Placzek (tada5hi)
+ * For the full copyright and license information,
+ * view the LICENSE file that was distributed with this source code.
+ */
+
 import path from 'node:path';
-import { getPackument } from './packument';
-import type { Package, PackagePublishOptions } from './types';
+import type { IPackagePublisher } from './core/publisher/types';
+import type { IRegistryClient } from './core/registry-client/types';
+import type { Package } from './core/package/types';
 import { isNpmJsPublishVersionConflict, isNpmPkgGitHubPublishVersionConflict } from './utils';
 
-export async function isPackagePublished(pkg: Package, options: Partial<PackagePublishOptions> = {}) : Promise<boolean> {
+export async function isPackagePublished(
+    pkg: Package,
+    registryClient: IRegistryClient,
+    options: { registry: string; token?: string },
+): Promise<boolean> {
     const { name, version } = pkg.content;
 
     if (!name || !version) {
         throw new Error(`Name or version attribute is missing in ${pkg.path}`);
     }
 
-    let exists = true;
-
     try {
-        const { versions } = await getPackument(name, options);
+        const { versions } = await registryClient.getPackument(name, options);
         if (typeof versions === 'undefined' || typeof versions[version] === 'undefined') {
-            exists = false;
+            return false;
         }
     } catch (e) {
-        exists = false;
+        return false;
     }
 
-    return exists;
+    return true;
 }
 
-export async function publishPackage(pkg: Package, options: PackagePublishOptions): Promise<boolean> {
-    let pkgPath : string;
+export async function publishPackage(
+    pkg: Package,
+    publisher: IPackagePublisher,
+    options: { token?: string; registry: string },
+): Promise<boolean> {
+    let pkgPath: string;
     if (path.isAbsolute(pkg.path)) {
         pkgPath = pkg.path;
     } else {
         pkgPath = path.resolve(pkg.path);
     }
 
-    const tarData = await libnpmpack(pkgPath);
+    const tarData = await publisher.pack(pkgPath);
 
-    const publishOptions : PublishOptions = {
+    const publishOptions: Record<string, any> = {
         ...(pkg.content.publishConfig || {}),
     };
 
@@ -53,29 +63,16 @@ export async function publishPackage(pkg: Package, options: PackagePublishOption
     }
 
     try {
-        await publish(pkg.content, tarData, publishOptions);
+        await publisher.publish(pkg.content, tarData, publishOptions);
 
         return true;
     } catch (e) {
-        /* istanbul ignore next */
         if (isNpmJsPublishVersionConflict(e) || isNpmPkgGitHubPublishVersionConflict(e)) {
             return false;
         }
 
-        /* istanbul ignore next */
         throw e;
     }
-}
-
-export async function publishPackages(pkgs: Package[], options: PackagePublishOptions) : Promise<Package[]> {
-    for (let i = 0; i < pkgs.length; i++) {
-        pkgs[i].published = await publishPackage(pkgs[i], {
-            token: options.token,
-            registry: options.registry,
-        });
-    }
-
-    return pkgs;
 }
 
 export function isPackagePublishable(pkg: Package): boolean {

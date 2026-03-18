@@ -5,8 +5,9 @@
  * view the LICENSE file that was distributed with this source code.
  */
 
-export * from './core';
-export * from './module';
-export * from './package';
-export * from './package-dependency';
+export * from './chain';
+export * from './env';
+export * from './memory';
+export * from './oidc';
+export * from './static';
 export * from './types';
