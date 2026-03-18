@@ -7,7 +7,7 @@ export class MemoryTokenProvider implements ITokenProvider {
         this.token = token;
     }
 
-    async getToken(): Promise<string | undefined> {
+    async getToken(_packageName: string, _registry: string): Promise<string | undefined> {
         return this.token;
     }
 }

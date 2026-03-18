@@ -34,7 +34,7 @@ export class MemoryFileSystem implements IFileSystem {
         for (let k = 0; k < keys.length; k++) {
             const key = keys[k];
 
-            if (cwd && !key.startsWith(cwd)) {
+            if (cwd && !key.startsWith(`${cwd}/`) && key !== cwd) {
                 continue;
             }
 

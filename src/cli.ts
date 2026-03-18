@@ -60,7 +60,7 @@ cli
             const packages = await publish({
                 registry: options.registry,
                 cwd: options.root,
-                rootPackage: true,
+                rootPackage: options.rootPackage ?? true,
                 fileSystem: new NodeFileSystem(),
                 registryClient: new HapicRegistryClient(),
                 publisher: new NpmPublisher(),
@@ -73,11 +73,7 @@ cli
             }
 
             for (let i = 0; i < packages.length; i++) {
-                if (packages[i].published) {
-                    logger.success(`published ${packages[i].content.name}@${packages[i].content.version}`);
-                } else {
-                    logger.success(`already published ${packages[i].content.name}@${packages[i].content.version}`);
-                }
+                logger.success(`published ${packages[i].content.name}@${packages[i].content.version}`);
             }
 
             process.exit(0);

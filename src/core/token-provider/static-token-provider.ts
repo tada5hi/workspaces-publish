@@ -7,7 +7,7 @@ export class StaticTokenProvider implements ITokenProvider {
         this.token = token;
     }
 
-    async getToken(): Promise<string> {
+    async getToken(_packageName: string, _registry: string): Promise<string> {
         return this.token;
     }
 }

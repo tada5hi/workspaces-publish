@@ -4,7 +4,7 @@ import type { IPackagePublisher } from './types';
 export class MemoryPublisher implements IPackagePublisher {
     public published: Array<{ manifest: PackageJson; options: Record<string, any> }> = [];
 
-    async pack(): Promise<Buffer> {
+    async pack(_packagePath: string): Promise<Buffer> {
         return Buffer.from('fake-tarball');
     }
 

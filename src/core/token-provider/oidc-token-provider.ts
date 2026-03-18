@@ -45,7 +45,11 @@ export class OidcTokenProvider implements ITokenProvider {
             );
         }
 
-        const { value: idToken } = await oidcResponse.json() as { value: string };
+        const oidcBody = await oidcResponse.json() as { value?: string };
+        const idToken = oidcBody.value;
+        if (!idToken) {
+            throw new Error('OIDC response did not contain a valid token');
+        }
 
         const encodedName = encodeURIComponent(packageName).replace(/^%40/, '@');
         const exchangeUrl = new URL(
@@ -66,7 +70,10 @@ export class OidcTokenProvider implements ITokenProvider {
             );
         }
 
-        const { token } = await exchangeResponse.json() as { token: string };
+        const { token } = await exchangeResponse.json() as { token?: string };
+        if (!token) {
+            throw new Error('Token exchange response did not contain a valid token');
+        }
 
         this.tokenCache.set(packageName, token);
 

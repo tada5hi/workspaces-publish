@@ -1,11 +1,11 @@
 import type { ILogger } from './types';
 
 export class NoopLogger implements ILogger {
-    info(): void {}
+    info(_message: string): void {}
 
-    success(): void {}
+    success(_message: string): void {}
 
-    warn(): void {}
+    warn(_message: string): void {}
 
-    error(): void {}
+    error(_message: string): void {}
 }
