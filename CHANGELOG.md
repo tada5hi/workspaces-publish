@@ -9,6 +9,13 @@
 * **deps:** bump libnpmpublish from 9.0.8 to 9.0.9 ([#131](https://github.com/tada5hi/workspaces-publish/issues/131)) ([10c2d17](https://github.com/tada5hi/workspaces-publish/commit/10c2d177b48f85538768fadfbf5499492e14a7b0))
 * **deps:** bump the minorandpatch group with 14 updates ([#297](https://github.com/tada5hi/workspaces-publish/issues/297)) ([3be75b1](https://github.com/tada5hi/workspaces-publish/commit/3be75b19e990a929dd61f51b3734e549f01c6f47))
 
+## [1.8.1](https://github.com/tada5hi/workspaces-publish/compare/v1.8.0...v1.8.1) (2026-03-18)
+
+
+### Bug Fixes
+
+* write .npmrc for npm cli publisher ([6140b77](https://github.com/tada5hi/workspaces-publish/commit/6140b77473662475afa5c39413f174eace2a4f3a))
+
 ## [1.8.0](https://github.com/tada5hi/workspaces-publish/compare/v1.7.0...v1.8.0) (2026-03-18)
 
 
