@@ -1,44 +1,8 @@
-export type PackageJson = {
-    name: string;
-
-    private?: boolean,
-
-    version: string;
-
-    publishConfig?: Record<string, any>,
-
-    workspaces?: string[],
-
-    dependencies?: Record<string, string>,
-
-    peerDependencies?: Record<string, string>,
-
-    devDependencies?: Record<string, string>,
-};
-
-export type Package = {
-    path: string;
-    content: PackageJson,
-    published?: boolean,
-    publishable?: boolean,
-    modified?: boolean
-};
-
-export type PackagePublishOptions = {
-    token?: string,
-    registry: string,
-};
-
-export type PackumentVersion = {
-    name: string,
-    version: string
-};
-
-export type Packument = {
-    name: string,
-    'dist-tags' : Record<string, string>,
-    versions: Record<string, PackumentVersion>
-};
+import type { IFileSystem } from './core/filesystem/types';
+import type { ILogger } from './core/logger/types';
+import type { IPackagePublisher } from './core/publisher/types';
+import type { IRegistryClient } from './core/registry-client/types';
+import type { ITokenProvider } from './core/token-provider/types';
 
 export type PublishOptions = {
     cwd?: string,
@@ -46,4 +10,10 @@ export type PublishOptions = {
     registry?: string,
     token?: string,
     dryRun?: boolean,
+
+    fileSystem?: IFileSystem,
+    registryClient?: IRegistryClient,
+    publisher?: IPackagePublisher,
+    tokenProvider?: ITokenProvider,
+    logger?: ILogger,
 };

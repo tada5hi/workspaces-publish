@@ -1,6 +1,6 @@
 import { hasOwnProperty } from 'hapic';
 import semver from 'semver';
-import type { Package } from './types';
+import type { Package } from './core/package/types';
 
 export function updatePackagesDependencies(packages: Package[]) {
     const pkgDir : Record<string, Package> = {};
