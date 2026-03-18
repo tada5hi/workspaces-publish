@@ -25,13 +25,31 @@ ESLint extends `@tada5hi/eslint-config-typescript`. Key overrides:
 - `no-shadow` — disabled
 - `no-use-before-define` — disabled
 
+### ESLint Constraints to Watch
+
+- **No `for...of` loops** — use indexed `for` loops instead
+- **No shorthand constructor parameter properties** (`private x: string` in constructor params) — declare the field explicitly and assign in constructor body
+- **No useless constructors** — if a constructor only assigns parameter properties, declare the field and assign explicitly
+
 ## File Organization
 
-- **Types**: Shared type definitions live in `src/types.ts`
-- **Constants**: Registry URLs and other constants in `src/constants.ts`
-- **Utilities**: Small helper functions in `src/utils/`
-- **Barrel exports**: `src/index.ts` re-exports the public API
-- Each source file focuses on a single responsibility
+- **Port interfaces**: Each domain has its own `types.ts` under `src/core/<domain>/`
+- **Adapters**: Real and fake implementations live alongside their port in the same folder
+- **Domain types**: `PackageJson` and `Package` live in `src/core/package/types.ts`
+- **Orchestration types**: `PublishOptions` lives in `src/types.ts` (references all port interfaces)
+- **Constants**: Registry URLs in `src/constants.ts`
+- **Utilities**: Small helpers in `src/utils/`
+- **Barrel exports**: Each `core/<domain>/` folder has `index.ts`, rolled up to `src/core/index.ts`
+- `src/index.ts` re-exports `./core`, `./module`, `./package`, `./package-dependency`, `./types`
+
+### Hexagonal Architecture Rules
+
+- Port interfaces go in `src/core/<domain>/types.ts`
+- Every port must have at least one real adapter and one memory/fake adapter
+- Adapters import from their own domain's `types.ts` (relative `./types`), not from root `types.ts`
+- The CLI (`cli.ts`) is the composition root — it wires real adapters
+- `module.ts` provides defaults for adapters not passed in `PublishOptions`
+- **Never use `vi.mock`** in tests — inject memory adapters instead
 
 ## Commit Convention
 
