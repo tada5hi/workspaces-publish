@@ -6,17 +6,57 @@
  */
 
 import { execFile } from 'node:child_process';
+import { readFile, unlink, writeFile } from 'node:fs/promises';
+import path from 'node:path';
 import { promisify } from 'node:util';
 import type { PackageJson } from '../package/types';
 import type { ExecFn, IPackagePublisher } from './types';
 
 const execFileAsync = promisify(execFile);
 
+const AUTH_TOKEN_PATTERN = /^(\/\/.+)\/:_authToken$/;
+
+function parseAuthTokenEntry(options: Record<string, any>): { key: string; token: string; registryPath: string } | undefined {
+    const keys = Object.keys(options);
+    for (let i = 0; i < keys.length; i++) {
+        const match = AUTH_TOKEN_PATTERN.exec(keys[i]);
+        if (match && options[keys[i]]) {
+            return {
+                key: keys[i],
+                token: options[keys[i]],
+                registryPath: match[1],
+            };
+        }
+    }
+
+    return undefined;
+}
+
+type ReadFileFn = (filePath: string, encoding: string) => Promise<string>;
+type WriteFileFn = (filePath: string, content: string, encoding: string) => Promise<void>;
+type UnlinkFn = (filePath: string) => Promise<void>;
+
+type NpmCliPublisherOptions = {
+    execFn?: ExecFn;
+    readFileFn?: ReadFileFn;
+    writeFileFn?: WriteFileFn;
+    unlinkFn?: UnlinkFn;
+};
+
 export class NpmCliPublisher implements IPackagePublisher {
     private execFn: ExecFn;
 
-    constructor(options: { execFn?: ExecFn } = {}) {
+    private readFileFn: ReadFileFn;
+
+    private writeFileFn: WriteFileFn;
+
+    private unlinkFn: UnlinkFn;
+
+    constructor(options: NpmCliPublisherOptions = {}) {
         this.execFn = options.execFn || execFileAsync;
+        this.readFileFn = options.readFileFn || ((fp, enc) => readFile(fp, enc as BufferEncoding) as Promise<string>);
+        this.writeFileFn = options.writeFileFn || ((fp, content, enc) => writeFile(fp, content, enc as BufferEncoding));
+        this.unlinkFn = options.unlinkFn || ((fp) => unlink(fp));
     }
 
     async publish(
@@ -26,12 +66,12 @@ export class NpmCliPublisher implements IPackagePublisher {
     ): Promise<void> {
         const args = ['publish'];
 
-        const authTokenKey = Object.keys(options).find((k) => k.includes(':_authToken'));
+        const authEntry = parseAuthTokenEntry(options);
 
         if (options.registry) {
             args.push('--registry', options.registry);
-        } else if (authTokenKey) {
-            args.push('--registry', `https:${authTokenKey.replace('/:_authToken', '')}`);
+        } else if (authEntry) {
+            args.push('--registry', `https:${authEntry.registryPath}`);
         }
 
         if (options.access) {
@@ -43,8 +83,30 @@ export class NpmCliPublisher implements IPackagePublisher {
         }
 
         const env: Record<string, string | undefined> = { ...process.env };
-        if (authTokenKey && options[authTokenKey]) {
-            env.NODE_AUTH_TOKEN = options[authTokenKey];
+
+        let npmrcPath: string | undefined;
+        let existingNpmrc: string | undefined;
+
+        if (authEntry) {
+            env.NODE_AUTH_TOKEN = authEntry.token;
+
+            const registryUrl = options.registry || `https:${authEntry.registryPath}`;
+            const url = new URL(registryUrl);
+            const npmrcContent = `//${url.host}/:_authToken=\${NODE_AUTH_TOKEN}\n`;
+
+            npmrcPath = path.join(packagePath, '.npmrc');
+
+            try {
+                existingNpmrc = await this.readFileFn(npmrcPath, 'utf-8');
+            } catch {
+                // no existing .npmrc
+            }
+
+            const finalContent = existingNpmrc ?
+                `${existingNpmrc.trimEnd()}\n${npmrcContent}` :
+                npmrcContent;
+
+            await this.writeFileFn(npmrcPath, finalContent, 'utf-8');
         }
 
         try {
@@ -54,6 +116,18 @@ export class NpmCliPublisher implements IPackagePublisher {
             });
         } catch (e: unknown) {
             throw this.normalizeError(e);
+        } finally {
+            if (npmrcPath) {
+                if (typeof existingNpmrc === 'string') {
+                    await this.writeFileFn(npmrcPath, existingNpmrc, 'utf-8');
+                } else {
+                    try {
+                        await this.unlinkFn(npmrcPath);
+                    } catch {
+                        // ignore cleanup errors
+                    }
+                }
+            }
         }
     }
 

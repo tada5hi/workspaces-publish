@@ -1,14 +1,33 @@
+import path from 'node:path';
 import {
     describe, expect, it,
 } from 'vitest';
 import { NpmCliPublisher } from '../../src/core';
 
-function createFakeExec(expectedArgs?: {
-    command?: string;
-    args?: string[];
-    cwd?: string;
-    envToken?: string;
-}) {
+function createFakeFs() {
+    const files: Record<string, string> = {};
+    const unlinked: string[] = [];
+
+    return {
+        files,
+        unlinked,
+        readFileFn: async (fp: string) => {
+            if (fp in files) {
+                return files[fp];
+            }
+            throw new Error('ENOENT');
+        },
+        writeFileFn: async (fp: string, content: string) => {
+            files[fp] = content;
+        },
+        unlinkFn: async (fp: string) => {
+            unlinked.push(fp);
+            delete files[fp];
+        },
+    };
+}
+
+function createFakeExec() {
     const calls: Array<{ command: string; args: string[]; options: { cwd: string; env: Record<string, string | undefined> } }> = [];
 
     const execFn = async (
@@ -26,7 +45,10 @@ function createFakeExec(expectedArgs?: {
 describe('src/core/publisher/npm-cli', () => {
     it('should call npm publish with correct cwd', async () => {
         const { execFn, calls } = createFakeExec();
-        const publisher = new NpmCliPublisher({ execFn });
+        const fs = createFakeFs();
+        const publisher = new NpmCliPublisher({
+            execFn, readFileFn: fs.readFileFn, writeFileFn: fs.writeFileFn, unlinkFn: fs.unlinkFn,
+        });
 
         await publisher.publish(
             '/project/packages/a',
@@ -42,7 +64,10 @@ describe('src/core/publisher/npm-cli', () => {
 
     it('should pass registry flag from auth token key', async () => {
         const { execFn, calls } = createFakeExec();
-        const publisher = new NpmCliPublisher({ execFn });
+        const fs = createFakeFs();
+        const publisher = new NpmCliPublisher({
+            execFn, readFileFn: fs.readFileFn, writeFileFn: fs.writeFileFn, unlinkFn: fs.unlinkFn,
+        });
 
         await publisher.publish(
             '/project/packages/a',
@@ -56,7 +81,10 @@ describe('src/core/publisher/npm-cli', () => {
 
     it('should prefer options.registry over auth token key derived registry', async () => {
         const { execFn, calls } = createFakeExec();
-        const publisher = new NpmCliPublisher({ execFn });
+        const fs = createFakeFs();
+        const publisher = new NpmCliPublisher({
+            execFn, readFileFn: fs.readFileFn, writeFileFn: fs.writeFileFn, unlinkFn: fs.unlinkFn,
+        });
 
         await publisher.publish(
             '/project/packages/a',
@@ -74,7 +102,10 @@ describe('src/core/publisher/npm-cli', () => {
 
     it('should set NODE_AUTH_TOKEN in env', async () => {
         const { execFn, calls } = createFakeExec();
-        const publisher = new NpmCliPublisher({ execFn });
+        const fs = createFakeFs();
+        const publisher = new NpmCliPublisher({
+            execFn, readFileFn: fs.readFileFn, writeFileFn: fs.writeFileFn, unlinkFn: fs.unlinkFn,
+        });
 
         await publisher.publish(
             '/project/packages/a',
@@ -85,9 +116,117 @@ describe('src/core/publisher/npm-cli', () => {
         expect(calls[0].options.env.NODE_AUTH_TOKEN).toEqual('my-token');
     });
 
+    it('should write .npmrc with auth token reference', async () => {
+        const { execFn } = createFakeExec();
+        const fs = createFakeFs();
+        const publisher = new NpmCliPublisher({
+            execFn, readFileFn: fs.readFileFn, writeFileFn: fs.writeFileFn, unlinkFn: fs.unlinkFn,
+        });
+
+        await publisher.publish(
+            '/project/packages/a',
+            { name: 'pkg-a', version: '1.0.0' },
+            { '//registry.npmjs.org/:_authToken': 'my-token' },
+        );
+
+        // .npmrc should be cleaned up after publish
+        expect(fs.unlinked).toContain(path.join('/project/packages/a', '.npmrc'));
+    });
+
+    it('should preserve existing .npmrc content during publish', async () => {
+        const { execFn, calls } = createFakeExec();
+        const fs = createFakeFs();
+        fs.files[path.join('/project/packages/a', '.npmrc')] = 'legacy-peer-deps=true\n';
+
+        let contentDuringPublish = '';
+        const capturingExecFn = async (
+            command: string,
+            args: string[],
+            options: { cwd: string; env: Record<string, string | undefined> },
+        ) => {
+            contentDuringPublish = fs.files[path.join('/project/packages/a', '.npmrc')] || '';
+            calls.push({ command, args, options });
+            return { stdout: '', stderr: '' };
+        };
+
+        const publisher = new NpmCliPublisher({
+            execFn: capturingExecFn, readFileFn: fs.readFileFn, writeFileFn: fs.writeFileFn, unlinkFn: fs.unlinkFn,
+        });
+
+        await publisher.publish(
+            '/project/packages/a',
+            { name: 'pkg-a', version: '1.0.0' },
+            { '//registry.npmjs.org/:_authToken': 'my-token' },
+        );
+
+        expect(contentDuringPublish).toContain('legacy-peer-deps=true');
+        expect(contentDuringPublish).toContain('//registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}');
+    });
+
+    it('should restore existing .npmrc after publish', async () => {
+        const { execFn } = createFakeExec();
+        const fs = createFakeFs();
+        fs.files['/project/packages/a/.npmrc'] = 'existing-content';
+        const publisher = new NpmCliPublisher({
+            execFn, readFileFn: fs.readFileFn, writeFileFn: fs.writeFileFn, unlinkFn: fs.unlinkFn,
+        });
+
+        await publisher.publish(
+            '/project/packages/a',
+            { name: 'pkg-a', version: '1.0.0' },
+            { '//registry.npmjs.org/:_authToken': 'my-token' },
+        );
+
+        expect(fs.files['/project/packages/a/.npmrc']).toEqual('existing-content');
+    });
+
+    it('should write correct .npmrc content for custom registry', async () => {
+        const { execFn } = createFakeExec();
+        const fs = createFakeFs();
+        let writtenContent = '';
+        const writeFileFn = async (_fp: string, content: string) => {
+            writtenContent = content;
+            fs.files[_fp] = content;
+        };
+        const publisher = new NpmCliPublisher({
+            execFn, readFileFn: fs.readFileFn, writeFileFn, unlinkFn: fs.unlinkFn,
+        });
+
+        await publisher.publish(
+            '/project/packages/a',
+            { name: 'pkg-a', version: '1.0.0' },
+            {
+                registry: 'https://npm.pkg.github.com/',
+                '//npm.pkg.github.com/:_authToken': 'gh-token',
+            },
+        );
+
+        expect(writtenContent).toEqual('//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}\n');
+    });
+
+    it('should not write .npmrc when no auth token', async () => {
+        const { execFn } = createFakeExec();
+        const fs = createFakeFs();
+        const publisher = new NpmCliPublisher({
+            execFn, readFileFn: fs.readFileFn, writeFileFn: fs.writeFileFn, unlinkFn: fs.unlinkFn,
+        });
+
+        await publisher.publish(
+            '/project/packages/a',
+            { name: 'pkg-a', version: '1.0.0' },
+            {},
+        );
+
+        expect(Object.keys(fs.files).length).toEqual(0);
+        expect(fs.unlinked.length).toEqual(0);
+    });
+
     it('should pass access flag when provided', async () => {
         const { execFn, calls } = createFakeExec();
-        const publisher = new NpmCliPublisher({ execFn });
+        const fs = createFakeFs();
+        const publisher = new NpmCliPublisher({
+            execFn, readFileFn: fs.readFileFn, writeFileFn: fs.writeFileFn, unlinkFn: fs.unlinkFn,
+        });
 
         await publisher.publish(
             '/project/packages/a',
@@ -101,7 +240,10 @@ describe('src/core/publisher/npm-cli', () => {
 
     it('should pass tag flag when provided', async () => {
         const { execFn, calls } = createFakeExec();
-        const publisher = new NpmCliPublisher({ execFn });
+        const fs = createFakeFs();
+        const publisher = new NpmCliPublisher({
+            execFn, readFileFn: fs.readFileFn, writeFileFn: fs.writeFileFn, unlinkFn: fs.unlinkFn,
+        });
 
         await publisher.publish(
             '/project/packages/a',
@@ -115,7 +257,10 @@ describe('src/core/publisher/npm-cli', () => {
 
     it('should not pass tag flag when not provided', async () => {
         const { execFn, calls } = createFakeExec();
-        const publisher = new NpmCliPublisher({ execFn });
+        const fs = createFakeFs();
+        const publisher = new NpmCliPublisher({
+            execFn, readFileFn: fs.readFileFn, writeFileFn: fs.writeFileFn, unlinkFn: fs.unlinkFn,
+        });
 
         await publisher.publish(
             '/project/packages/a',
@@ -128,7 +273,10 @@ describe('src/core/publisher/npm-cli', () => {
 
     it('should not set registry when no auth token key', async () => {
         const { execFn, calls } = createFakeExec();
-        const publisher = new NpmCliPublisher({ execFn });
+        const fs = createFakeFs();
+        const publisher = new NpmCliPublisher({
+            execFn, readFileFn: fs.readFileFn, writeFileFn: fs.writeFileFn, unlinkFn: fs.unlinkFn,
+        });
 
         await publisher.publish(
             '/project/packages/a',
@@ -143,7 +291,10 @@ describe('src/core/publisher/npm-cli', () => {
         const execFn = async () => {
             throw new Error('npm not found');
         };
-        const publisher = new NpmCliPublisher({ execFn });
+        const fs = createFakeFs();
+        const publisher = new NpmCliPublisher({
+            execFn, readFileFn: fs.readFileFn, writeFileFn: fs.writeFileFn, unlinkFn: fs.unlinkFn,
+        });
 
         await expect(publisher.publish(
             '/project/packages/a',
@@ -152,13 +303,38 @@ describe('src/core/publisher/npm-cli', () => {
         )).rejects.toThrow('npm not found');
     });
 
+    it('should clean up .npmrc after exec error', async () => {
+        const execFn = async () => {
+            throw new Error('npm publish failed');
+        };
+        const fs = createFakeFs();
+        const publisher = new NpmCliPublisher({
+            execFn, readFileFn: fs.readFileFn, writeFileFn: fs.writeFileFn, unlinkFn: fs.unlinkFn,
+        });
+
+        try {
+            await publisher.publish(
+                '/project/packages/a',
+                { name: 'pkg-a', version: '1.0.0' },
+                { '//registry.npmjs.org/:_authToken': 'my-token' },
+            );
+        } catch {
+            // expected
+        }
+
+        expect(fs.unlinked).toContain(path.join('/project/packages/a', '.npmrc'));
+    });
+
     it('should normalize npmjs version conflict error from stderr', async () => {
         const execFn = async () => {
             const err: Record<string, unknown> = new Error('Command failed');
             err.stderr = 'npm error code EPUBLISHCONFLICT';
             throw err;
         };
-        const publisher = new NpmCliPublisher({ execFn });
+        const fs = createFakeFs();
+        const publisher = new NpmCliPublisher({
+            execFn, readFileFn: fs.readFileFn, writeFileFn: fs.writeFileFn, unlinkFn: fs.unlinkFn,
+        });
 
         try {
             await publisher.publish(
@@ -178,7 +354,10 @@ describe('src/core/publisher/npm-cli', () => {
             err.stderr = '403 Forbidden - You cannot publish over the previously published versions: 1.0.0.';
             throw err;
         };
-        const publisher = new NpmCliPublisher({ execFn });
+        const fs = createFakeFs();
+        const publisher = new NpmCliPublisher({
+            execFn, readFileFn: fs.readFileFn, writeFileFn: fs.writeFileFn, unlinkFn: fs.unlinkFn,
+        });
 
         try {
             await publisher.publish(
@@ -198,7 +377,10 @@ describe('src/core/publisher/npm-cli', () => {
             err.stderr = '409 Conflict - Cannot publish over existing version';
             throw err;
         };
-        const publisher = new NpmCliPublisher({ execFn });
+        const fs = createFakeFs();
+        const publisher = new NpmCliPublisher({
+            execFn, readFileFn: fs.readFileFn, writeFileFn: fs.writeFileFn, unlinkFn: fs.unlinkFn,
+        });
 
         try {
             await publisher.publish(

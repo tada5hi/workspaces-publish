@@ -7,6 +7,25 @@ import {
 } from '../../src/package';
 import type { Package } from '../../src/core/package/types';
 
+function createFakeFs() {
+    const files: Record<string, string> = {};
+
+    return {
+        readFileFn: async (fp: string) => {
+            if (fp in files) {
+                return files[fp];
+            }
+            throw new Error('ENOENT');
+        },
+        writeFileFn: async (fp: string, content: string) => {
+            files[fp] = content;
+        },
+        unlinkFn: async (fp: string) => {
+            delete files[fp];
+        },
+    };
+}
+
 describe('src/package', () => {
     describe('isPackagePublishable', () => {
         it('should return true for a valid package', () => {
@@ -166,7 +185,10 @@ describe('src/package', () => {
                 err.stderr = 'npm error code EPUBLISHCONFLICT';
                 throw err;
             };
-            const publisher = new NpmCliPublisher({ execFn });
+            const fs = createFakeFs();
+            const publisher = new NpmCliPublisher({
+                execFn, readFileFn: fs.readFileFn, writeFileFn: fs.writeFileFn, unlinkFn: fs.unlinkFn,
+            });
             const pkg: Package = {
                 path: '/project/packages/a',
                 content: { name: 'pkg-a', version: '1.0.0' },
@@ -186,7 +208,10 @@ describe('src/package', () => {
                 err.stderr = '403 Forbidden - You cannot publish over the previously published versions: 1.0.0.';
                 throw err;
             };
-            const publisher = new NpmCliPublisher({ execFn });
+            const fs = createFakeFs();
+            const publisher = new NpmCliPublisher({
+                execFn, readFileFn: fs.readFileFn, writeFileFn: fs.writeFileFn, unlinkFn: fs.unlinkFn,
+            });
             const pkg: Package = {
                 path: '/project/packages/a',
                 content: { name: 'pkg-a', version: '1.0.0' },
@@ -206,7 +231,10 @@ describe('src/package', () => {
                 err.stderr = '409 Conflict - Cannot publish over existing version';
                 throw err;
             };
-            const publisher = new NpmCliPublisher({ execFn });
+            const fs = createFakeFs();
+            const publisher = new NpmCliPublisher({
+                execFn, readFileFn: fs.readFileFn, writeFileFn: fs.writeFileFn, unlinkFn: fs.unlinkFn,
+            });
             const pkg: Package = {
                 path: '/project/packages/a',
                 content: { name: 'pkg-a', version: '1.0.0' },
@@ -224,7 +252,10 @@ describe('src/package', () => {
             const execFn = async () => {
                 throw new Error('npm ERR! 500 Internal Server Error');
             };
-            const publisher = new NpmCliPublisher({ execFn });
+            const fs = createFakeFs();
+            const publisher = new NpmCliPublisher({
+                execFn, readFileFn: fs.readFileFn, writeFileFn: fs.writeFileFn, unlinkFn: fs.unlinkFn,
+            });
             const pkg: Package = {
                 path: '/project/packages/a',
                 content: { name: 'pkg-a', version: '1.0.0' },
