@@ -2,26 +2,32 @@ import {
     afterEach, describe, expect, it,
 } from 'vitest';
 import {
-    EnvTokenProvider, MemoryTokenProvider, StaticTokenProvider,
+    EnvTokenProvider, MemoryTokenProvider,
 } from '../../src/core';
 
-describe('StaticTokenProvider', () => {
-    it('should always return the configured token', async () => {
-        const provider = new StaticTokenProvider('my-secret-token');
+describe('MemoryTokenProvider', () => {
+    it('should return configured token', async () => {
+        const provider = new MemoryTokenProvider('test-token');
+        const token = await provider.getToken('pkg', 'https://registry.npmjs.org/');
 
-        const token = await provider.getToken('any-package', 'https://registry.npmjs.org/');
-
-        expect(token).toEqual('my-secret-token');
+        expect(token).toEqual('test-token');
     });
 
     it('should return same token regardless of package name', async () => {
-        const provider = new StaticTokenProvider('fixed');
+        const provider = new MemoryTokenProvider('fixed');
 
         const a = await provider.getToken('pkg-a', 'https://registry.npmjs.org/');
         const b = await provider.getToken('pkg-b', 'https://registry.npmjs.org/');
 
         expect(a).toEqual('fixed');
         expect(b).toEqual('fixed');
+    });
+
+    it('should return undefined when no token configured', async () => {
+        const provider = new MemoryTokenProvider();
+        const token = await provider.getToken('pkg', 'https://registry.npmjs.org/');
+
+        expect(token).toBeUndefined();
     });
 });
 
@@ -58,22 +64,6 @@ describe('EnvTokenProvider', () => {
         process.env.NODE_AUTH_TOKEN = '';
 
         const provider = new EnvTokenProvider();
-        const token = await provider.getToken('pkg', 'https://registry.npmjs.org/');
-
-        expect(token).toBeUndefined();
-    });
-});
-
-describe('MemoryTokenProvider', () => {
-    it('should return configured token', async () => {
-        const provider = new MemoryTokenProvider('test-token');
-        const token = await provider.getToken('pkg', 'https://registry.npmjs.org/');
-
-        expect(token).toEqual('test-token');
-    });
-
-    it('should return undefined when no token configured', async () => {
-        const provider = new MemoryTokenProvider();
         const token = await provider.getToken('pkg', 'https://registry.npmjs.org/');
 
         expect(token).toBeUndefined();

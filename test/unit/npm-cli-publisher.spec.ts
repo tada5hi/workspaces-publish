@@ -81,6 +81,33 @@ describe('src/core/publisher/npm-cli', () => {
         expect(calls[0].args).toContain('public');
     });
 
+    it('should pass tag flag when provided', async () => {
+        const { execFn, calls } = createFakeExec();
+        const publisher = new NpmCliPublisher({ execFn });
+
+        await publisher.publish(
+            '/project/packages/a',
+            { name: 'pkg-a', version: '1.0.0-beta.1' },
+            { tag: 'beta' },
+        );
+
+        expect(calls[0].args).toContain('--tag');
+        expect(calls[0].args).toContain('beta');
+    });
+
+    it('should not pass tag flag when not provided', async () => {
+        const { execFn, calls } = createFakeExec();
+        const publisher = new NpmCliPublisher({ execFn });
+
+        await publisher.publish(
+            '/project/packages/a',
+            { name: 'pkg-a', version: '1.0.0' },
+            {},
+        );
+
+        expect(calls[0].args).not.toContain('--tag');
+    });
+
     it('should not set registry when no auth token key', async () => {
         const { execFn, calls } = createFakeExec();
         const publisher = new NpmCliPublisher({ execFn });

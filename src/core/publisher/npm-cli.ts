@@ -40,6 +40,10 @@ export class NpmCliPublisher implements IPackagePublisher {
             args.push('--access', options.access);
         }
 
+        if (options.tag) {
+            args.push('--tag', options.tag);
+        }
+
         const env: Record<string, string | undefined> = { ...process.env };
         if (authTokenKey && options[authTokenKey]) {
             env.NODE_AUTH_TOKEN = options[authTokenKey];

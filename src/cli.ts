@@ -10,8 +10,8 @@
 import { cac } from 'cac';
 import {
     ChainTokenProvider, ConsolaLogger, EnvTokenProvider,
-    HapicRegistryClient, NodeFileSystem,
-    OidcTokenProvider, StaticTokenProvider, resolvePublisher,
+    HapicRegistryClient, MemoryTokenProvider, NodeFileSystem,
+    OidcTokenProvider, resolvePublisher,
 } from './core';
 import type { ITokenProvider } from './core';
 import { publish } from './module';
@@ -19,7 +19,7 @@ import { isObject } from './utils';
 
 function resolveTokenProvider(cliToken?: string): ITokenProvider {
     if (cliToken) {
-        return new StaticTokenProvider(cliToken);
+        return new MemoryTokenProvider(cliToken);
     }
 
     const requestUrl = process.env.ACTIONS_ID_TOKEN_REQUEST_URL;

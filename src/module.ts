@@ -8,7 +8,7 @@
 import path from 'node:path';
 import {
     EnvTokenProvider, HapicRegistryClient,
-    NodeFileSystem, StaticTokenProvider, resolvePublisher,
+    MemoryTokenProvider, NodeFileSystem, resolvePublisher,
 } from './core';
 import type { IFileSystem, ITokenProvider } from './core';
 import type { Package, PackageJson } from './core/package/types';
@@ -25,7 +25,7 @@ function resolveTokenProvider(options: PublishOptions): ITokenProvider {
     }
 
     if (options.token) {
-        return new StaticTokenProvider(options.token);
+        return new MemoryTokenProvider(options.token);
     }
 
     return new EnvTokenProvider();
