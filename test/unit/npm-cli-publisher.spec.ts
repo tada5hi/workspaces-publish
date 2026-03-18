@@ -54,6 +54,24 @@ describe('src/core/publisher/npm-cli', () => {
         expect(calls[0].args).toContain('https://registry.npmjs.org');
     });
 
+    it('should prefer options.registry over auth token key derived registry', async () => {
+        const { execFn, calls } = createFakeExec();
+        const publisher = new NpmCliPublisher({ execFn });
+
+        await publisher.publish(
+            '/project/packages/a',
+            { name: 'pkg-a', version: '1.0.0' },
+            {
+                registry: 'https://custom.registry.com/',
+                '//registry.npmjs.org/:_authToken': 'my-token',
+            },
+        );
+
+        expect(calls[0].args).toContain('--registry');
+        expect(calls[0].args).toContain('https://custom.registry.com/');
+        expect(calls[0].args).not.toContain('https://registry.npmjs.org');
+    });
+
     it('should set NODE_AUTH_TOKEN in env', async () => {
         const { execFn, calls } = createFakeExec();
         const publisher = new NpmCliPublisher({ execFn });

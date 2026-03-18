@@ -27,13 +27,11 @@ export class NpmCliPublisher implements IPackagePublisher {
         const args = ['publish'];
 
         const authTokenKey = Object.keys(options).find((k) => k.includes(':_authToken'));
-        let registry: string | undefined;
-        if (authTokenKey) {
-            registry = `https:${authTokenKey.replace('/:_authToken', '')}`;
-        }
 
-        if (registry) {
-            args.push('--registry', registry);
+        if (options.registry) {
+            args.push('--registry', options.registry);
+        } else if (authTokenKey) {
+            args.push('--registry', `https:${authTokenKey.replace('/:_authToken', '')}`);
         }
 
         if (options.access) {
