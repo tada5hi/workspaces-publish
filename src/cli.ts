@@ -10,16 +10,16 @@
 import { cac } from 'cac';
 import {
     ChainTokenProvider, ConsolaLogger, EnvTokenProvider,
-    HapicRegistryClient, NodeFileSystem, NpmPublisher,
-    OidcTokenProvider, StaticTokenProvider,
+    HapicRegistryClient, MemoryTokenProvider, NodeFileSystem,
+    OidcTokenProvider, resolvePublisher,
 } from './core';
 import type { ITokenProvider } from './core';
 import { publish } from './module';
 import { isObject } from './utils';
 
-function resolveTokenProvider(cliToken?: string): ITokenProvider {
-    if (cliToken) {
-        return new StaticTokenProvider(cliToken);
+function resolveTokenProvider(token?: string): ITokenProvider {
+    if (token && token.length > 0) {
+        return new MemoryTokenProvider(token);
     }
 
     const requestUrl = process.env.ACTIONS_ID_TOKEN_REQUEST_URL;
@@ -64,13 +64,15 @@ cli
                 process.env.NODE_AUTH_TOKEN = options.token;
             }
 
+            const publisher = await resolvePublisher();
+
             const packages = await publish({
                 registry: options.registry,
                 cwd: options.root,
                 rootPackage: options.rootPackage ?? true,
                 fileSystem: new NodeFileSystem(),
                 registryClient: new HapicRegistryClient(),
-                publisher: new NpmPublisher(),
+                publisher,
                 tokenProvider,
                 logger,
             });

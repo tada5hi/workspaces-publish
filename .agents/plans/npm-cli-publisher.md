@@ -1,4 +1,4 @@
-# Plan: Prefer npm CLI for publishing with libnpmpublish fallback
+# Plan: Prefer npm CLI for publishing with libnpmpublish fallback (IMPLEMENTED)
 
 ## Motivation
 

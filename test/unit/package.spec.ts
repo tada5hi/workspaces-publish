@@ -1,7 +1,7 @@
 import {
     describe, expect, it,
 } from 'vitest';
-import { MemoryPublisher, MemoryRegistryClient } from '../../src/core';
+import { MemoryPublisher, MemoryRegistryClient, NpmCliPublisher } from '../../src/core';
 import {
     isPackagePublishable, isPackagePublished, publishPackage,
 } from '../../src/package';
@@ -158,6 +158,82 @@ describe('src/package', () => {
             });
 
             expect(publisher.published[0].options.access).toEqual('public');
+        });
+
+        it('should return false on npmjs EPUBLISHCONFLICT', async () => {
+            const execFn = async () => {
+                const err: Record<string, unknown> = new Error('Command failed');
+                err.stderr = 'npm error code EPUBLISHCONFLICT';
+                throw err;
+            };
+            const publisher = new NpmCliPublisher({ execFn });
+            const pkg: Package = {
+                path: '/project/packages/a',
+                content: { name: 'pkg-a', version: '1.0.0' },
+            };
+
+            const result = await publishPackage(pkg, publisher, {
+                token: 'test-token',
+                registry: 'https://registry.npmjs.org/',
+            });
+
+            expect(result).toBe(false);
+        });
+
+        it('should return false on npmjs 403 version conflict', async () => {
+            const execFn = async () => {
+                const err: Record<string, unknown> = new Error('Command failed');
+                err.stderr = '403 Forbidden - You cannot publish over the previously published versions: 1.0.0.';
+                throw err;
+            };
+            const publisher = new NpmCliPublisher({ execFn });
+            const pkg: Package = {
+                path: '/project/packages/a',
+                content: { name: 'pkg-a', version: '1.0.0' },
+            };
+
+            const result = await publishPackage(pkg, publisher, {
+                token: 'test-token',
+                registry: 'https://registry.npmjs.org/',
+            });
+
+            expect(result).toBe(false);
+        });
+
+        it('should return false on GitHub Packages 409 conflict', async () => {
+            const execFn = async () => {
+                const err: Record<string, unknown> = new Error('Command failed');
+                err.stderr = '409 Conflict - Cannot publish over existing version';
+                throw err;
+            };
+            const publisher = new NpmCliPublisher({ execFn });
+            const pkg: Package = {
+                path: '/project/packages/a',
+                content: { name: 'pkg-a', version: '1.0.0' },
+            };
+
+            const result = await publishPackage(pkg, publisher, {
+                token: 'test-token',
+                registry: 'https://npm.pkg.github.com/',
+            });
+
+            expect(result).toBe(false);
+        });
+
+        it('should throw on non-conflict npm CLI errors', async () => {
+            const execFn = async () => {
+                throw new Error('npm ERR! 500 Internal Server Error');
+            };
+            const publisher = new NpmCliPublisher({ execFn });
+            const pkg: Package = {
+                path: '/project/packages/a',
+                content: { name: 'pkg-a', version: '1.0.0' },
+            };
+
+            await expect(publishPackage(pkg, publisher, {
+                token: 'test-token',
+                registry: 'https://registry.npmjs.org/',
+            })).rejects.toThrow();
         });
     });
 });

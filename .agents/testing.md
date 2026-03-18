@@ -26,6 +26,7 @@ test/
 │   ├── module.spec.ts              # Publish orchestrator (9 tests)
 │   ├── package.spec.ts             # Package logic (11 tests)
 │   ├── package-dependency.spec.ts  # Workspace dep resolution (7 tests)
+│   ├── npm-cli-publisher.spec.ts   # NpmCliPublisher (6 tests)
 │   ├── oidc-token-provider.spec.ts # OIDC flow (8 tests)
 │   ├── chain-token-provider.spec.ts # Chain fallback (4 tests)
 │   └── token-provider.spec.ts      # Static/Env/Memory providers (7 tests)
@@ -76,7 +77,7 @@ const packages = await publish({
 |------------------------|-----------------------------------|----------------------------------------|
 | `MemoryFileSystem`     | File reads, writes, glob          | Constructor accepts `Record<path, content>` |
 | `MemoryRegistryClient` | Registry packument queries        | Constructor accepts `Record<name, Packument>` |
-| `MemoryPublisher`      | Pack and publish                  | `.published` array records all publish calls |
+| `MemoryPublisher`      | Publish                           | `.published` array records all publish calls |
 | `MemoryTokenProvider`  | Token resolution                  | Constructor accepts optional token string |
 | `NoopLogger`           | Logging output                    | All methods are no-ops                  |
 
@@ -99,7 +100,7 @@ const provider = new OidcTokenProvider({
 
 ## Coverage
 
-Coverage reports are generated with `@vitest/coverage-v8`. Current coverage: 46 tests across 6 files.
+Coverage reports are generated with `@vitest/coverage-v8`. Current coverage: 52 tests across 7 files.
 
 Areas covered:
 - Full publish pipeline (publish, skip, private, dryRun, workspace deps)
@@ -109,6 +110,7 @@ Areas covered:
 - Token provider chain fallback
 - Static, env, and memory token providers
 - Tokenless publishing
+- NpmCliPublisher (args, env, cwd, registry, access, error propagation)
 
 ## Writing New Tests
 

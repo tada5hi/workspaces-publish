@@ -18,6 +18,8 @@ export class NodeFileSystem implements IFileSystem {
         await fs.promises.writeFile(filePath, content, { encoding: 'utf-8' });
     }
 
+    // ----------------------------------------------------
+
     async glob(
         patterns: string[],
         options: { cwd?: string; ignore?: string[] } = {},

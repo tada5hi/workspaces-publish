@@ -11,11 +11,15 @@ import type { IFileSystem } from './types';
 export class MemoryFileSystem implements IFileSystem {
     private files: Map<string, string>;
 
-    constructor(files?: Record<string, string>) {
+    // ----------------------------------------------------
+
+    constructor(files: Record<string, string> = {}) {
         this.files = new Map(
-            Object.entries(files ?? {}).map(([k, v]) => [this.normalize(k), v]),
+            Object.entries(files || {}).map(([k, v]) => [this.normalize(k), v]),
         );
     }
+
+    // ----------------------------------------------------
 
     async readFile(filePath: string): Promise<string> {
         const normalized = this.normalize(filePath);
@@ -29,6 +33,8 @@ export class MemoryFileSystem implements IFileSystem {
     async writeFile(filePath: string, content: string): Promise<void> {
         this.files.set(this.normalize(filePath), content);
     }
+
+    // ----------------------------------------------------
 
     async glob(
         patterns: string[],
@@ -61,9 +67,13 @@ export class MemoryFileSystem implements IFileSystem {
         return Array.from(dirs);
     }
 
+    // ----------------------------------------------------
+
     getFile(filePath: string): string | undefined {
         return this.files.get(this.normalize(filePath));
     }
+
+    // ----------------------------------------------------
 
     private normalize(filePath: string): string {
         return path.posix.normalize(filePath.replace(/\\/g, '/'));

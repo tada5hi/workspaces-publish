@@ -9,5 +9,4 @@ export * from './chain';
 export * from './env';
 export * from './memory';
 export * from './oidc';
-export * from './static';
 export * from './types';

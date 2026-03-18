@@ -12,10 +12,8 @@ if one already exists.
 At best, it should be used with a library that increments the version of the packages beforehand
 (e.g. [release-please](https://github.com/googleapis/release-please)).
 
-It is based on the packages
-([libnpmpublish](https://www.npmjs.com/package/libnpmpublish),
-[libnpmpack](https://www.npmjs.com/package/libnpmpack))
-that the npm cli uses to publish packages.
+When npm >= 10.0.0 is available, it shells out to `npm publish` directly (supporting OIDC, provenance, etc. out of the box).
+Otherwise it falls back to [libnpmpublish](https://www.npmjs.com/package/libnpmpublish) / [libnpmpack](https://www.npmjs.com/package/libnpmpack).
 
 **Table of Contents**
 - [Installation](#installation)
@@ -132,7 +130,7 @@ Available port interfaces and their adapters:
 |------|-------------|-------------|
 | `IFileSystem` | `NodeFileSystem` | `MemoryFileSystem` |
 | `IRegistryClient` | `HapicRegistryClient` | `MemoryRegistryClient` |
-| `IPackagePublisher` | `NpmPublisher` | `MemoryPublisher` |
+| `IPackagePublisher` | `NpmCliPublisher` (npm CLI), `NpmPublisher` (libnpmpublish fallback) | `MemoryPublisher` |
 | `ITokenProvider` | `StaticTokenProvider`, `EnvTokenProvider`, `OidcTokenProvider`, `ChainTokenProvider` | `MemoryTokenProvider` |
 | `ILogger` | `ConsolaLogger` | `NoopLogger` |
 

@@ -28,8 +28,10 @@ workspaces-publish/
 │   │   │   └── index.ts
 │   │   ├── publisher/                  # Package publish port
 │   │   │   ├── types.ts                # IPackagePublisher interface
-│   │   │   ├── npm-publisher.ts        # Real adapter (libnpmpack + libnpmpublish)
-│   │   │   ├── memory-publisher.ts     # Fake adapter (records calls)
+│   │   │   ├── npm-cli.ts              # Primary adapter (shells out to npm CLI)
+│   │   │   ├── npm.ts                  # Fallback adapter (libnpmpack + libnpmpublish)
+│   │   │   ├── resolve.ts              # Factory: detects npm CLI version, picks adapter
+│   │   │   ├── memory.ts              # Fake adapter (records calls)
 │   │   │   └── index.ts
 │   │   ├── token-provider/             # Authentication port
 │   │   │   ├── types.ts                # ITokenProvider interface

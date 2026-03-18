@@ -7,7 +7,12 @@
 
 import type { PackageJson } from '../package/types';
 
+export type ExecFn = (
+    command: string,
+    args: string[],
+    options: { cwd: string; env: Record<string, string | undefined> },
+) => Promise<{ stdout: string; stderr: string }>;
+
 export interface IPackagePublisher {
-    pack(packagePath: string): Promise<Buffer>;
-    publish(manifest: PackageJson, tarball: Buffer, options: Record<string, any>): Promise<void>;
+    publish(packagePath: string, manifest: PackageJson, options: Record<string, any>): Promise<void>;
 }
