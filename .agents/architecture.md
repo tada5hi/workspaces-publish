@@ -48,12 +48,16 @@ Adapters: `HapicRegistryClient` (hapic HTTP), `MemoryRegistryClient` (in-memory 
 
 ```typescript
 interface IPackagePublisher {
-    pack(packagePath: string): Promise<Buffer>;
-    publish(manifest: PackageJson, tarball: Buffer, options: Record<string, any>): Promise<void>;
+    publish(packagePath: string, manifest: PackageJson, options: Record<string, any>): Promise<void>;
 }
 ```
 
-Adapters: `NpmPublisher` (libnpmpack + libnpmpublish), `MemoryPublisher` (records calls)
+Adapters:
+- `NpmCliPublisher` — shells out to `npm publish` (primary, used when npm >= 10.0.0)
+- `NpmPublisher` — uses libnpmpack + libnpmpublish (fallback)
+- `MemoryPublisher` — records calls (for tests)
+
+Use `resolvePublisher()` factory to auto-detect the best adapter.
 
 ### ITokenProvider (`core/token-provider/types.ts`)
 
