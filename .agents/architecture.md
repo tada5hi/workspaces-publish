@@ -144,7 +144,7 @@ Output:
 2. If npm >= 10.0.0 → returns `NpmCliPublisher` (shells out to `npm publish`)
 3. If npm is missing or too old → returns `NpmPublisher` (libnpmpack + libnpmpublish)
 
-Both accept an injectable `execFn` for testing. The factory passes the same `execFn` to `NpmCliPublisher` when selected.
+`resolvePublisher()` accepts an injectable `execFn` for version detection. When `NpmCliPublisher` is selected, the same `execFn` is passed into its constructor.
 
 ### NpmCliPublisher
 
