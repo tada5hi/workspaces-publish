@@ -7,4 +7,6 @@
 
 export * from './memory';
 export * from './npm';
+export * from './npm-cli';
+export * from './resolve';
 export * from './types';

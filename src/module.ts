@@ -8,7 +8,7 @@
 import path from 'node:path';
 import {
     EnvTokenProvider, HapicRegistryClient,
-    NodeFileSystem, NpmPublisher, StaticTokenProvider,
+    NodeFileSystem, StaticTokenProvider, resolvePublisher,
 } from './core';
 import type { IFileSystem, ITokenProvider } from './core';
 import type { Package, PackageJson } from './core/package/types';
@@ -69,7 +69,7 @@ export async function publish(options: PublishOptions = {}): Promise<Package[]> 
 
     const fileSystem = options.fileSystem ?? new NodeFileSystem();
     const registryClient = options.registryClient ?? new HapicRegistryClient();
-    const publisher = options.publisher ?? new NpmPublisher();
+    const publisher = options.publisher ?? await resolvePublisher();
     const tokenProvider = resolveTokenProvider(options);
 
     const raw = await fileSystem.readFile(path.posix.join(cwd, 'package.json'));

@@ -46,8 +46,6 @@ export async function publishPackage(
         pkgPath = path.resolve(pkg.path);
     }
 
-    const tarData = await publisher.pack(pkgPath);
-
     const publishOptions: Record<string, any> = {
         ...(pkg.content.publishConfig || {}),
     };
@@ -63,7 +61,7 @@ export async function publishPackage(
     }
 
     try {
-        await publisher.publish(pkg.content, tarData, publishOptions);
+        await publisher.publish(pkgPath, pkg.content, publishOptions);
 
         return true;
     } catch (e) {

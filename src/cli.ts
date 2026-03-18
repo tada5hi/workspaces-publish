@@ -10,8 +10,8 @@
 import { cac } from 'cac';
 import {
     ChainTokenProvider, ConsolaLogger, EnvTokenProvider,
-    HapicRegistryClient, NodeFileSystem, NpmPublisher,
-    OidcTokenProvider, StaticTokenProvider,
+    HapicRegistryClient, NodeFileSystem,
+    OidcTokenProvider, StaticTokenProvider, resolvePublisher,
 } from './core';
 import type { ITokenProvider } from './core';
 import { publish } from './module';
@@ -64,13 +64,15 @@ cli
                 process.env.NODE_AUTH_TOKEN = options.token;
             }
 
+            const publisher = await resolvePublisher();
+
             const packages = await publish({
                 registry: options.registry,
                 cwd: options.root,
                 rootPackage: options.rootPackage ?? true,
                 fileSystem: new NodeFileSystem(),
                 registryClient: new HapicRegistryClient(),
-                publisher: new NpmPublisher(),
+                publisher,
                 tokenProvider,
                 logger,
             });
