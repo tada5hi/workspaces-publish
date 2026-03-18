@@ -1,6 +1,13 @@
-export * from './chain-token-provider';
-export * from './env-token-provider';
-export * from './memory-token-provider';
-export * from './oidc-token-provider';
-export * from './static-token-provider';
+/*
+ * Copyright (c) 2026.
+ * Author Peter Placzek (tada5hi)
+ * For the full copyright and license information,
+ * view the LICENSE file that was distributed with this source code.
+ */
+
+export * from './chain';
+export * from './env';
+export * from './memory';
+export * from './oidc';
+export * from './static';
 export * from './types';

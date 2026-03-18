@@ -1,3 +1,10 @@
+/*
+ * Copyright (c) 2026.
+ * Author Peter Placzek (tada5hi)
+ * For the full copyright and license information,
+ * view the LICENSE file that was distributed with this source code.
+ */
+
 /**
  * The purpose of this function is to determine whether the error object passed
  * in represents a version conflict when publishing a package to the npm registry.

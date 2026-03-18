@@ -1,3 +1,10 @@
+/*
+ * Copyright (c) 2026.
+ * Author Peter Placzek (tada5hi)
+ * For the full copyright and license information,
+ * view the LICENSE file that was distributed with this source code.
+ */
+
 import { hasOwnProperty } from 'hapic';
 import semver from 'semver';
 import type { Package } from './core/package/types';
