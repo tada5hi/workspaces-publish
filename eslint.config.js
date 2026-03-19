@@ -13,6 +13,12 @@ export default eslintConfig(
         },
     },
     {
+        files: ['tsdown.config.ts'],
+        rules: {
+            'import-x/no-extraneous-dependencies': ['error', { devDependencies: true }],
+        },
+    },
+    {
         ignores: ['dist/**'],
     },
 );

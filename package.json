@@ -16,7 +16,7 @@
     "exports": {
         "./package.json": "./package.json",
         ".": {
-            "types": "./dist/index.d.ts",
+            "types": "./dist/index.d.mts",
             "import": "./dist/index.mjs"
         }
     },
@@ -28,10 +28,7 @@
         "node": ">=22.0.0"
     },
     "scripts": {
-        "build:types": "tsc --emitDeclarationOnly",
-        "build:js": "rollup -c",
-        "build": "npm run build:types && npm run build:js",
-        "build:watch": "npm run build -- --watch",
+        "build": "tsdown",
         "commit": "npx git-cz",
         "test": "cross-env NODE_ENV=test vitest run --config test/vitest.config.ts",
         "test:coverage": "cross-env NODE_ENV=test vitest run --config test/vitest.config.ts --coverage",
@@ -39,7 +36,7 @@
         "lint:fix": "npm run lint -- --fix",
         "prepare": "husky install",
         "dev": "ts-node src/cli.ts",
-        "start": "node dist/cli.cjs"
+        "start": "node dist/cli.mjs"
     },
     "keywords": [],
     "bin": {
@@ -56,9 +53,6 @@
         "semver": "^7.7.4"
     },
     "devDependencies": {
-        "@rollup/plugin-node-resolve": "^16.0.2",
-        "@rollup/plugin-swc": "^0.4.0",
-        "@swc/core": "^1.15.18",
         "@tada5hi/commitlint-config": "^1.2.7",
         "@tada5hi/eslint-config": "^2.0.1",
         "@tada5hi/tsconfig": "^0.7.0",
@@ -70,7 +64,7 @@
         "cross-env": "^10.1.0",
         "eslint": "^10.0.3",
         "husky": "^9.1.7",
-        "rollup": "^4.59.0",
+        "tsdown": "^0.21.4",
         "ts-node": "^10.9.2",
         "typescript": "^5.9.3",
         "typescript-eslint": "^8.57.1",
