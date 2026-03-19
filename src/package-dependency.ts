@@ -77,17 +77,19 @@ function updatePackageDependenciesByType(
 
     const keys = Object.keys(dependencies);
     for (const key of keys) {
+        const value = dependencies[key];
+        if (!value || !isDependencyWorkspaceProtocolValue(value)) {
+            continue;
+        }
+
         if (!hasOwnProperty(pkgDir, key)) {
+            pkg.valid = false;
             continue;
         }
 
         const depPkg = pkgDir[key];
         if (!depPkg) {
-            continue;
-        }
-
-        const value = dependencies[key];
-        if (!value || !isDependencyWorkspaceProtocolValue(value)) {
+            pkg.valid = false;
             continue;
         }
 

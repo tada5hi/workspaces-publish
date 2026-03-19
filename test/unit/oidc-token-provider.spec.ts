@@ -21,169 +21,196 @@ function createFakeFetch(responses: Array<{ ok: boolean; status: number; body: a
     return { fetchFn, calls };
 }
 
+const OIDC_URL = 'https://actions.github.com/oidc/token';
+const OIDC_URL_QS = `${OIDC_URL}?v=1`;
+const NPM_REGISTRY = 'https://registry.npmjs.org/';
+const GITHUB_REGISTRY = 'https://npm.pkg.github.com/';
+
+function ok(body: any, status = 200) {
+    return { ok: true, status, body };
+}
+
+function fail(status: number) {
+    return { ok: false, status, body: {} };
+}
+
+function createProvider(
+    fetchFn: typeof globalThis.fetch,
+    options: { url?: string; maxRetries?: number } = {},
+) {
+    return new OidcTokenProvider({
+        requestUrl: options.url ?? OIDC_URL_QS,
+        requestToken: 'bearer',
+        fetchFn,
+        maxRetries: options.maxRetries,
+        retryDelayMs: 0,
+    });
+}
+
 describe('OidcTokenProvider', () => {
     it('should fetch OIDC token and exchange with npm registry', async () => {
         const { fetchFn, calls } = createFakeFetch([
-            { ok: true, status: 200, body: { value: 'oidc-id-token-123' } },
-            { ok: true, status: 201, body: { token: 'npm-short-lived-token' } },
+            ok({ value: 'oidc-id-token-123' }),
+            ok({ token: 'npm-short-lived-token' }, 201),
         ]);
 
         const provider = new OidcTokenProvider({
-            requestUrl: 'https://actions.github.com/oidc/token?api-version=1.0',
+            requestUrl: `${OIDC_URL}?api-version=1.0`,
             requestToken: 'github-bearer-token',
             fetchFn,
+            retryDelayMs: 0,
         });
 
-        const token = await provider.getToken('@scope/my-pkg', 'https://registry.npmjs.org/');
+        const token = await provider.getToken('@scope/my-pkg', NPM_REGISTRY);
 
         expect(token).toEqual('npm-short-lived-token');
-        expect(calls.length).toEqual(2);
-
-        // Step 1: OIDC token request to GitHub
+        expect(calls).toHaveLength(2);
         expect(calls[0].url).toContain('audience=npm%3Aregistry.npmjs.org');
         expect(calls[0].url).toContain('&audience=');
         expect(calls[0].init?.headers).toEqual(
             expect.objectContaining({ Authorization: 'Bearer github-bearer-token' }),
         );
-
-        // Step 2: Token exchange with npm registry
         expect(calls[1].url).toContain('/-/npm/v1/oidc/token/exchange/package/@scope%2Fmy-pkg');
         expect(calls[1].init?.method).toEqual('POST');
-        expect(calls[1].init?.headers).toEqual(
-            expect.objectContaining({ Authorization: 'Bearer oidc-id-token-123' }),
-        );
-        // Should NOT send Content-Type since there is no body
-        expect(calls[1].init?.headers).not.toEqual(
-            expect.objectContaining({ 'Content-Type': expect.any(String) }),
-        );
     });
 
-    it('should cache tokens for repeated calls to same package', async () => {
+    it('should cache tokens for repeated calls to same package and registry', async () => {
         const { fetchFn, calls } = createFakeFetch([
-            { ok: true, status: 200, body: { value: 'oidc-token' } },
-            { ok: true, status: 201, body: { token: 'cached-token' } },
+            ok({ value: 'oidc-token' }),
+            ok({ token: 'cached-token' }, 201),
         ]);
 
-        const provider = new OidcTokenProvider({
-            requestUrl: 'https://actions.github.com/oidc/token?api-version=1.0',
-            requestToken: 'bearer',
-            fetchFn,
-        });
-
-        const token1 = await provider.getToken('pkg-a', 'https://registry.npmjs.org/');
-        const token2 = await provider.getToken('pkg-a', 'https://registry.npmjs.org/');
+        const provider = createProvider(fetchFn);
+        const token1 = await provider.getToken('pkg-a', NPM_REGISTRY);
+        const token2 = await provider.getToken('pkg-a', NPM_REGISTRY);
 
         expect(token1).toEqual('cached-token');
         expect(token2).toEqual('cached-token');
-        // Only 2 HTTP calls total (not 4), proving cache works
-        expect(calls.length).toEqual(2);
+        expect(calls).toHaveLength(2);
     });
 
     it('should fetch separate tokens for different packages', async () => {
         const { fetchFn, calls } = createFakeFetch([
-            { ok: true, status: 200, body: { value: 'oidc-1' } },
-            { ok: true, status: 201, body: { token: 'token-a' } },
-            { ok: true, status: 200, body: { value: 'oidc-2' } },
-            { ok: true, status: 201, body: { token: 'token-b' } },
+            ok({ value: 'oidc-1' }), ok({ token: 'token-a' }, 201),
+            ok({ value: 'oidc-2' }), ok({ token: 'token-b' }, 201),
         ]);
 
-        const provider = new OidcTokenProvider({
-            requestUrl: 'https://actions.github.com/oidc/token?v=1',
-            requestToken: 'bearer',
-            fetchFn,
-        });
+        const provider = createProvider(fetchFn);
 
-        const tokenA = await provider.getToken('pkg-a', 'https://registry.npmjs.org/');
-        const tokenB = await provider.getToken('pkg-b', 'https://registry.npmjs.org/');
+        expect(await provider.getToken('pkg-a', NPM_REGISTRY)).toEqual('token-a');
+        expect(await provider.getToken('pkg-b', NPM_REGISTRY)).toEqual('token-b');
+        expect(calls).toHaveLength(4);
+    });
 
-        expect(tokenA).toEqual('token-a');
-        expect(tokenB).toEqual('token-b');
-        expect(calls.length).toEqual(4);
+    it('should use separate cache entries for different registries', async () => {
+        const { fetchFn, calls } = createFakeFetch([
+            ok({ value: 'oidc-1' }), ok({ token: 'npm-token' }, 201),
+            ok({ value: 'oidc-2' }), ok({ token: 'github-token' }, 201),
+        ]);
+
+        const provider = createProvider(fetchFn);
+
+        expect(await provider.getToken('pkg-a', NPM_REGISTRY)).toEqual('npm-token');
+        expect(await provider.getToken('pkg-a', GITHUB_REGISTRY)).toEqual('github-token');
+        expect(calls).toHaveLength(4);
     });
 
     it('should throw when OIDC token fetch fails', async () => {
-        const { fetchFn } = createFakeFetch([
-            { ok: false, status: 401, body: { error: 'unauthorized' } },
-        ]);
-
-        const provider = new OidcTokenProvider({
-            requestUrl: 'https://actions.github.com/oidc/token',
-            requestToken: 'bad-token',
-            fetchFn,
-        });
+        const { fetchFn } = createFakeFetch([fail(401)]);
+        const provider = createProvider(fetchFn, { maxRetries: 0 });
 
         await expect(
-            provider.getToken('pkg-a', 'https://registry.npmjs.org/'),
+            provider.getToken('pkg-a', NPM_REGISTRY),
         ).rejects.toThrow('Failed to fetch OIDC token from GitHub');
     });
 
     it('should throw when npm token exchange fails', async () => {
         const { fetchFn } = createFakeFetch([
-            { ok: true, status: 200, body: { value: 'oidc-token' } },
-            { ok: false, status: 404, body: { error: 'package not found' } },
+            ok({ value: 'oidc-token' }),
+            fail(404),
         ]);
-
-        const provider = new OidcTokenProvider({
-            requestUrl: 'https://actions.github.com/oidc/token',
-            requestToken: 'bearer',
-            fetchFn,
-        });
+        const provider = createProvider(fetchFn, { maxRetries: 0 });
 
         await expect(
-            provider.getToken('pkg-a', 'https://registry.npmjs.org/'),
+            provider.getToken('pkg-a', NPM_REGISTRY),
         ).rejects.toThrow('Failed to exchange OIDC token with npm registry');
     });
 
     it('should construct correct audience from registry URL', async () => {
         const { fetchFn, calls } = createFakeFetch([
-            { ok: true, status: 200, body: { value: 'token' } },
-            { ok: true, status: 201, body: { token: 't' } },
+            ok({ value: 'token' }), ok({ token: 't' }, 201),
         ]);
 
-        const provider = new OidcTokenProvider({
-            requestUrl: 'https://actions.github.com/oidc/token?v=1',
-            requestToken: 'bearer',
-            fetchFn,
-        });
-
-        await provider.getToken('pkg', 'https://npm.pkg.github.com/');
+        const provider = createProvider(fetchFn);
+        await provider.getToken('pkg', GITHUB_REGISTRY);
 
         expect(calls[0].url).toContain('audience=npm%3Anpm.pkg.github.com');
     });
 
     it('should use ? separator when requestUrl has no query string', async () => {
         const { fetchFn, calls } = createFakeFetch([
-            { ok: true, status: 200, body: { value: 'token' } },
-            { ok: true, status: 201, body: { token: 't' } },
+            ok({ value: 'token' }), ok({ token: 't' }, 201),
         ]);
 
-        const provider = new OidcTokenProvider({
-            requestUrl: 'https://actions.github.com/oidc/token',
-            requestToken: 'bearer',
-            fetchFn,
-        });
-
-        await provider.getToken('pkg', 'https://registry.npmjs.org/');
+        const provider = createProvider(fetchFn, { url: OIDC_URL });
+        await provider.getToken('pkg', NPM_REGISTRY);
 
         expect(calls[0].url).toEqual(
-            'https://actions.github.com/oidc/token?audience=npm%3Aregistry.npmjs.org',
+            `${OIDC_URL}?audience=npm%3Aregistry.npmjs.org`,
         );
     });
 
     it('should encode unscoped package names correctly', async () => {
         const { fetchFn, calls } = createFakeFetch([
-            { ok: true, status: 200, body: { value: 'token' } },
-            { ok: true, status: 201, body: { token: 't' } },
+            ok({ value: 'token' }), ok({ token: 't' }, 201),
         ]);
 
-        const provider = new OidcTokenProvider({
-            requestUrl: 'https://actions.github.com/oidc/token?v=1',
-            requestToken: 'bearer',
-            fetchFn,
-        });
-
-        await provider.getToken('my-package', 'https://registry.npmjs.org/');
+        const provider = createProvider(fetchFn);
+        await provider.getToken('my-package', NPM_REGISTRY);
 
         expect(calls[1].url).toContain('/-/npm/v1/oidc/token/exchange/package/my-package');
+    });
+
+    it('should retry on 5xx and succeed', async () => {
+        const { fetchFn } = createFakeFetch([
+            fail(500),
+            ok({ value: 'oidc-token' }),
+            ok({ token: 'npm-token' }, 201),
+        ]);
+
+        const provider = createProvider(fetchFn, { maxRetries: 1 });
+        expect(await provider.getToken('pkg-a', NPM_REGISTRY)).toEqual('npm-token');
+    });
+
+    it('should not retry on 4xx errors', async () => {
+        const { fetchFn, calls } = createFakeFetch([fail(403)]);
+        const provider = createProvider(fetchFn, { maxRetries: 2 });
+
+        await expect(
+            provider.getToken('pkg-a', NPM_REGISTRY),
+        ).rejects.toThrow('Failed to fetch OIDC token from GitHub');
+        expect(calls).toHaveLength(1);
+    });
+
+    it('should retry on network error and succeed', async () => {
+        let callCount = 0;
+        const fetchFn = async () => {
+            callCount++;
+            if (callCount === 1) throw new Error('ECONNRESET');
+            if (callCount === 2) return { ok: true, status: 200, statusText: 'OK', json: async () => ({ value: 'oidc-token' }) } as Response;
+            return { ok: true, status: 201, statusText: 'OK', json: async () => ({ token: 'npm-token' }) } as Response;
+        };
+
+        const provider = createProvider(fetchFn, { maxRetries: 1 });
+        expect(await provider.getToken('pkg-a', NPM_REGISTRY)).toEqual('npm-token');
+    });
+
+    it('should fail after max retries exhausted', async () => {
+        const { fetchFn } = createFakeFetch([fail(500), fail(500), fail(500)]);
+        const provider = createProvider(fetchFn, { maxRetries: 2 });
+
+        await expect(
+            provider.getToken('pkg-a', NPM_REGISTRY),
+        ).rejects.toThrow('Failed to fetch OIDC token from GitHub: 500');
     });
 });

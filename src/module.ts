@@ -8,7 +8,7 @@
 import path from 'node:path';
 import {
     EnvTokenProvider, HapicRegistryClient,
-    MemoryTokenProvider, NodeFileSystem, resolvePublisher,
+    MemoryTokenProvider, NodeFileSystem, NoopLogger, resolvePublisher,
 } from './core/index.ts';
 import type {
     IFileSystem, ITokenProvider, Package, PackageJson,
@@ -17,6 +17,7 @@ import { REGISTRY_URL } from './constants.ts';
 import {
     isPackagePublishable, isPackagePublished, publishPackage,
 } from './package.ts';
+import { isError } from './utils/index.ts';
 import { updatePackagesDependencies } from './package-dependency.ts';
 import type { PublishOptions } from './types.ts';
 
@@ -72,6 +73,7 @@ export async function publish(options: PublishOptions = {}): Promise<Package[]> 
     const registryClient = options.registryClient ?? new HapicRegistryClient();
     const publisher = options.publisher ?? await resolvePublisher();
     const tokenProvider = resolveTokenProvider(options);
+    const logger = options.logger ?? new NoopLogger();
 
     const raw = await fileSystem.readFile(path.posix.join(cwd, 'package.json'));
     let pkg: PackageJson;
@@ -110,6 +112,11 @@ export async function publish(options: PublishOptions = {}): Promise<Package[]> 
             continue;
         }
 
+        if (p.valid === false) {
+            logger.warn(`Skipping ${p.content.name}: unresolved workspace dependencies`);
+            continue;
+        }
+
         const token = await tokenProvider.getToken(p.content.name, registry);
         const published = await isPackagePublished(p, registryClient, { registry, token });
         if (published) {
@@ -117,10 +124,16 @@ export async function publish(options: PublishOptions = {}): Promise<Package[]> 
         }
 
         if (p.modified && !options.dryRun) {
-            await fileSystem.writeFile(
-                path.posix.join(p.path, 'package.json'),
-                JSON.stringify(p.content),
-            );
+            try {
+                await fileSystem.writeFile(
+                    path.posix.join(p.path, 'package.json'),
+                    JSON.stringify(p.content),
+                );
+            } catch (e) {
+                const message = isError(e) ? e.message : String(e);
+                logger.warn(`Failed to write package.json for ${p.content.name}: ${message}`);
+                continue;
+            }
         }
 
         unpublishedPackages.push({ pkg: p, token });
