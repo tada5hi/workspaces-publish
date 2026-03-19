@@ -4,7 +4,7 @@ workspaces-publish is a single-package repository (not a monorepo itself), but i
 
 ## Directory Layout
 
-```
+```text
 workspaces-publish/
 ├── src/                                # TypeScript source
 │   ├── cli.ts                          # CLI entry point & composition root

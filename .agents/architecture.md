@@ -257,7 +257,7 @@ Both return `false` from `publish()` on conflict instead of throwing. This keeps
 
 A base error class in `src/core/error.ts` provides typed `code` and `statusCode` fields:
 
-```
+```text
 BaseError (code, statusCode)
 ├── RegistryError    — thrown by registry client adapters (e.g. 404 not found, 500 server error)
 └── PublishError     — thrown by publisher adapters on non-conflict failures
