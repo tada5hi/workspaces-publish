@@ -5,6 +5,7 @@ import {
     MemoryFileSystem, MemoryPublisher,
     MemoryRegistryClient, MemoryTokenProvider, NoopLogger,
 } from '../../src/core/index.ts';
+import type { ILogger } from '../../src/core/index.ts';
 import { publish } from '../../src/module.ts';
 
 function createTestFileSystem() {
@@ -43,6 +44,17 @@ function createTestOptions(overrides: Record<string, any> = {}) {
         tokenProvider: new MemoryTokenProvider('test-token'),
         logger: new NoopLogger(),
         ...overrides,
+    };
+}
+
+function createSpyLogger(): ILogger & { warnings: string[] } {
+    const warnings: string[] = [];
+    return {
+        warnings,
+        info: () => {},
+        success: () => {},
+        warn: (msg: string) => { warnings.push(msg); },
+        error: () => {},
     };
 }
 
@@ -200,5 +212,62 @@ describe('src/module', () => {
         }));
 
         expect(packages.length).toEqual(0);
+    });
+
+    it('should skip packages with unresolved workspace dependencies', async () => {
+        const logger = createSpyLogger();
+        const packages = await publish(createTestOptions({
+            fileSystem: new MemoryFileSystem({
+                '/project/package.json': JSON.stringify({
+                    name: 'root', version: '1.0.0', workspaces: ['packages/*'],
+                }),
+                '/project/packages/pkgA/package.json': JSON.stringify({
+                    name: 'pkg-a', version: '1.0.0',
+                    dependencies: { 'pkg-missing': 'workspace:^' },
+                }),
+                '/project/packages/pkgB/package.json': JSON.stringify({
+                    name: 'pkg-b', version: '1.0.0',
+                }),
+            }),
+            logger,
+            rootPackage: false,
+        }));
+
+        const names = packages.map((p) => p.content.name);
+        expect(names).not.toContain('pkg-a');
+        expect(names).toContain('pkg-b');
+        expect(logger.warnings.some((w) => w.includes('pkg-a') && w.includes('unresolved'))).toBe(true);
+    });
+
+    it('should skip package when writeFile fails during dependency rewrite', async () => {
+        const baseFs = new MemoryFileSystem({
+            '/project/package.json': JSON.stringify({
+                name: 'root', version: '1.0.0', workspaces: ['packages/*'],
+            }),
+            '/project/packages/pkgA/package.json': JSON.stringify({
+                name: 'pkg-a', version: '1.0.0',
+                dependencies: { 'pkg-b': 'workspace:^' },
+            }),
+            '/project/packages/pkgB/package.json': JSON.stringify({
+                name: 'pkg-b', version: '1.0.0',
+            }),
+        });
+
+        const logger = createSpyLogger();
+        const packages = await publish(createTestOptions({
+            dryRun: false,
+            fileSystem: {
+                readFile: (fp: string) => baseFs.readFile(fp),
+                glob: (p: string[], o: { cwd?: string; ignore?: string[] }) => baseFs.glob(p, o),
+                writeFile: () => Promise.reject(new Error('disk full')),
+            },
+            logger,
+            rootPackage: false,
+        }));
+
+        const names = packages.map((p) => p.content.name);
+        expect(names).not.toContain('pkg-a');
+        expect(names).toContain('pkg-b');
+        expect(logger.warnings.some((w) => w.includes('pkg-a') && w.includes('disk full'))).toBe(true);
     });
 });

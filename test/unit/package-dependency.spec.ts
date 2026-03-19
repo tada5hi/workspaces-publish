@@ -143,4 +143,48 @@ describe('src/package-dependency', () => {
 
         expect(packages[0].modified).toBeUndefined();
     });
+
+    it('should mark package as invalid when workspace dep targets non-existent package', () => {
+        const packages: Package[] = [
+            {
+                path: '/project/packages/a',
+                content: {
+                    name: 'pkg-a',
+                    version: '1.0.0',
+                    dependencies: { 'pkg-missing': 'workspace:^' },
+                },
+            },
+        ];
+
+        updatePackagesDependencies(packages);
+
+        expect(packages[0].valid).toBe(false);
+        expect(packages[0].content.dependencies!['pkg-missing']).toEqual('workspace:^');
+    });
+
+    it('should mark package as invalid while still resolving valid workspace deps', () => {
+        const packages: Package[] = [
+            {
+                path: '/project/packages/a',
+                content: {
+                    name: 'pkg-a',
+                    version: '1.0.0',
+                    dependencies: {
+                        'pkg-b': 'workspace:^',
+                        'pkg-missing': 'workspace:~',
+                    },
+                },
+            },
+            {
+                path: '/project/packages/b',
+                content: { name: 'pkg-b', version: '2.0.0' },
+            },
+        ];
+
+        updatePackagesDependencies(packages);
+
+        expect(packages[0].valid).toBe(false);
+        expect(packages[0].content.dependencies!['pkg-b']).toEqual('^2.0.0');
+        expect(packages[0].modified).toBe(true);
+    });
 });

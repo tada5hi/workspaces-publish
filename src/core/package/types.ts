@@ -28,5 +28,6 @@ export type Package = {
     content: PackageJson,
     published?: boolean,
     publishable?: boolean,
-    modified?: boolean
+    modified?: boolean,
+    valid?: boolean,
 };
