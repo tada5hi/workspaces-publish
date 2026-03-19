@@ -2,7 +2,7 @@
     "extends": "@tada5hi/tsconfig",
     "compilerOptions": {
         "lib": [
-            "ESNext"
+            "ES2022"
         ],
         "module": "ESNext",
         "moduleResolution": "bundler",
