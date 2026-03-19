@@ -5,6 +5,6 @@
  * view the LICENSE file that was distributed with this source code.
  */
 
-export * from './memory';
-export * from './node';
-export * from './types';
+export * from './memory.ts';
+export * from './node.ts';
+export * from './types.ts';

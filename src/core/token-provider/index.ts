@@ -5,8 +5,8 @@
  * view the LICENSE file that was distributed with this source code.
  */
 
-export * from './chain';
-export * from './env';
-export * from './memory';
-export * from './oidc';
-export * from './types';
+export * from './chain.ts';
+export * from './env.ts';
+export * from './memory.ts';
+export * from './oidc.ts';
+export * from './types.ts';

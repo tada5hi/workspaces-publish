@@ -5,8 +5,8 @@
  * view the LICENSE file that was distributed with this source code.
  */
 
-export * from './core';
-export * from './module';
-export * from './package';
-export * from './package-dependency';
-export * from './types';
+export * from './core/index.ts';
+export * from './module.ts';
+export * from './package.ts';
+export * from './package-dependency.ts';
+export * from './types.ts';

@@ -6,7 +6,7 @@
  */
 
 import consola from 'consola';
-import type { ILogger } from './types';
+import type { ILogger } from './types.ts';
 
 export class ConsolaLogger implements ILogger {
     info(message: string): void {

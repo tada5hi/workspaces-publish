@@ -1,7 +1,7 @@
 import {
     describe, expect, it,
 } from 'vitest';
-import { ChainTokenProvider, MemoryTokenProvider } from '../../src/core';
+import { ChainTokenProvider, MemoryTokenProvider } from '../../src/core/index.ts';
 
 describe('ChainTokenProvider', () => {
     it('should return token from first provider that has one', async () => {

@@ -5,7 +5,7 @@
  * view the LICENSE file that was distributed with this source code.
  */
 
-import type { ILogger } from './types';
+import type { ILogger } from './types.ts';
 
 export class NoopLogger implements ILogger {
     info(_message: string): void {}

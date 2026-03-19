@@ -7,17 +7,16 @@
 
 import { hasOwnProperty } from 'hapic';
 import semver from 'semver';
-import type { Package } from './core/package/types';
+import type { Package } from './core/index.ts';
 
 export function updatePackagesDependencies(packages: Package[]) {
     const pkgDir : Record<string, Package> = {};
 
-    for (let i = 0; i < packages.length; i++) {
-        pkgDir[packages[i].content.name] = packages[i];
+    for (const package_ of packages) {
+        pkgDir[package_.content.name] = package_;
     }
 
-    for (let i = 0; i < packages.length; i++) {
-        const pkg = packages[i];
+    for (const pkg of packages) {
 
         if (pkg.content.dependencies) {
             updatePackageDependenciesByType(pkg, 'dependencies', pkgDir);
@@ -77,19 +76,19 @@ function updatePackageDependenciesByType(
     }
 
     const keys = Object.keys(dependencies);
-    for (let i = 0; i < keys.length; i++) {
-        if (!hasOwnProperty(pkgDir, keys[i])) {
+    for (const key of keys) {
+        if (!hasOwnProperty(pkgDir, key)) {
             continue;
         }
 
-        const depPkg = pkgDir[keys[i]];
+        const depPkg = pkgDir[key];
 
-        let value = dependencies[keys[i]];
+        let value = dependencies[key];
 
         if (isDependencyWorkspaceProtocolValue(value)) {
             value = value.substring(10);
 
-            dependencies[keys[i]] = normalizeDependencyVersionValue(value, depPkg.content.version);
+            dependencies[key] = normalizeDependencyVersionValue(value, depPkg.content.version);
             pkg.modified = true;
         }
     }

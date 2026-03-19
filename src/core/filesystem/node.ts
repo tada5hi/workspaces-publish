@@ -7,7 +7,7 @@
 
 import fs from 'node:fs';
 import fg from 'fast-glob';
-import type { IFileSystem } from './types';
+import type { IFileSystem } from './types.ts';
 
 export class NodeFileSystem implements IFileSystem {
     async readFile(filePath: string): Promise<string> {
@@ -17,8 +17,6 @@ export class NodeFileSystem implements IFileSystem {
     async writeFile(filePath: string, content: string): Promise<void> {
         await fs.promises.writeFile(filePath, content, { encoding: 'utf-8' });
     }
-
-    // ----------------------------------------------------
 
     async glob(
         patterns: string[],

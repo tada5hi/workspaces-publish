@@ -6,7 +6,7 @@
  */
 
 import resolve from '@rollup/plugin-node-resolve';
-import swc from "@rollup/plugin-swc";
+import swc from '@rollup/plugin-swc';
 import pkg from './package.json' with {type: 'json'};
 
 const extensions = [

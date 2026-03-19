@@ -5,9 +5,10 @@
  * view the LICENSE file that was distributed with this source code.
  */
 
-import hapic from 'hapic';
-import { REGISTRY_URL } from '../../constants';
-import type { IRegistryClient, Packument } from './types';
+import hapic, { isClientError } from 'hapic';
+import { REGISTRY_URL } from '../../constants.ts';
+import { RegistryError } from './error.ts';
+import type { IRegistryClient, Packument } from './types.ts';
 
 export class HapicRegistryClient implements IRegistryClient {
     async getPackument(
@@ -25,11 +26,19 @@ export class HapicRegistryClient implements IRegistryClient {
             headers.AUTHORIZATION = `Bearer ${options.token}`;
         }
 
-        const response = await hapic.get(
-            new URL(path, options.registry || REGISTRY_URL).toString(),
-            { headers },
-        );
+        try {
+            const response = await hapic.get(
+                new URL(path, options.registry || REGISTRY_URL).toString(),
+                { headers },
+            );
 
-        return response.data;
+            return response.data;
+        } catch (e) {
+            if (isClientError(e)) {
+                throw new RegistryError(e.message, e.statusCode || 500);
+            }
+
+            throw new RegistryError(`Registry request failed for ${name}`, 500);
+        }
     }
 }

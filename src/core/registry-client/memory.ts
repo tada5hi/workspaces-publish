@@ -5,24 +5,29 @@
  * view the LICENSE file that was distributed with this source code.
  */
 
-import type { IRegistryClient, Packument } from './types';
+import { RegistryError } from './error.ts';
+import type { IRegistryClient, Packument } from './types.ts';
 
 export class MemoryRegistryClient implements IRegistryClient {
-    private packuments: Map<string, Packument>;
+    private readonly items: Map<string, Packument>;
 
-    constructor(packuments?: Record<string, Packument>) {
-        this.packuments = new Map(Object.entries(packuments ?? {}));
+    // ----------------------------------------------------
+
+    constructor(items: Record<string, Packument> = {}) {
+        this.items = new Map(Object.entries(items));
     }
 
+    // ----------------------------------------------------
+
     async getPackument(name: string): Promise<Packument> {
-        const packument = this.packuments.get(name);
+        const packument = this.items.get(name);
         if (!packument) {
-            throw new Error(`Package not found: ${name}`);
+            throw new RegistryError(`Package not found: ${name}`, 404);
         }
         return packument;
     }
 
     addPackument(name: string, packument: Packument): void {
-        this.packuments.set(name, packument);
+        this.items.set(name, packument);
     }
 }

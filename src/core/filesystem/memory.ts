@@ -6,10 +6,10 @@
  */
 
 import path from 'node:path';
-import type { IFileSystem } from './types';
+import type { IFileSystem } from './types.ts';
 
 export class MemoryFileSystem implements IFileSystem {
-    private files: Map<string, string>;
+    private readonly files: Map<string, string>;
 
     // ----------------------------------------------------
 
@@ -34,8 +34,6 @@ export class MemoryFileSystem implements IFileSystem {
         this.files.set(this.normalize(filePath), content);
     }
 
-    // ----------------------------------------------------
-
     async glob(
         patterns: string[],
         options: { cwd?: string; ignore?: string[] } = {},
@@ -44,8 +42,7 @@ export class MemoryFileSystem implements IFileSystem {
         const dirs = new Set<string>();
         const keys = Array.from(this.files.keys());
 
-        for (let k = 0; k < keys.length; k++) {
-            const key = keys[k];
+        for (const key of keys) {
 
             if (cwd && !key.startsWith(`${cwd}/`) && key !== cwd) {
                 continue;
@@ -54,9 +51,9 @@ export class MemoryFileSystem implements IFileSystem {
             const relative = cwd ? key.slice(cwd.length + 1) : key;
             const parts = relative.split('/');
 
-            for (let p = 0; p < patterns.length; p++) {
-                if (this.matchGlobPattern(parts, patterns[p])) {
-                    const dir = parts.slice(0, patterns[p].split('/').length)
+            for (const pattern of patterns) {
+                if (this.matchGlobPattern(parts, pattern)) {
+                    const dir = parts.slice(0, pattern.split('/').length)
                         .join('/');
                     const absolute = cwd ? `${cwd}/${dir}` : dir;
                     dirs.add(absolute);
@@ -66,8 +63,6 @@ export class MemoryFileSystem implements IFileSystem {
 
         return Array.from(dirs);
     }
-
-    // ----------------------------------------------------
 
     getFile(filePath: string): string | undefined {
         return this.files.get(this.normalize(filePath));
@@ -82,10 +77,9 @@ export class MemoryFileSystem implements IFileSystem {
     private matchGlobPattern(parts: string[], pattern: string): boolean {
         const patternParts = pattern.split('/');
 
-        for (let i = 0; i < patternParts.length; i++) {
+        for (const [i, pp] of patternParts.entries()) {
             if (i >= parts.length) return false;
 
-            const pp = patternParts[i];
             if (pp === '*' || pp === '**') continue;
             if (pp !== parts[i]) return false;
         }

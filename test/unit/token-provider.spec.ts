@@ -3,7 +3,7 @@ import {
 } from 'vitest';
 import {
     EnvTokenProvider, MemoryTokenProvider,
-} from '../../src/core';
+} from '../../src/core/index.ts';
 
 describe('MemoryTokenProvider', () => {
     it('should return configured token', async () => {

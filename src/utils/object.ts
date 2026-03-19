@@ -10,3 +10,8 @@ export function isObject(input: unknown) : input is Record<string, any> {
         input !== null &&
         !Array.isArray(input);
 }
+
+export function isError(input: unknown): input is Error {
+    return isObject(input) &&
+        typeof input.message === 'string';
+}

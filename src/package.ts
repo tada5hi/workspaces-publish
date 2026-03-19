@@ -6,10 +6,8 @@
  */
 
 import path from 'node:path';
-import type { IPackagePublisher } from './core/publisher/types';
-import type { IRegistryClient } from './core/registry-client/types';
-import type { Package } from './core/package/types';
-import { isNpmJsPublishVersionConflict, isNpmPkgGitHubPublishVersionConflict } from './utils';
+import type { IPackagePublisher, IRegistryClient, Package } from './core/index.ts';
+import { isRegistryError } from './core/index.ts';
 
 export async function isPackagePublished(
     pkg: Package,
@@ -28,7 +26,11 @@ export async function isPackagePublished(
             return false;
         }
     } catch (e) {
-        return false;
+        if (isRegistryError(e) && e.statusCode === 404) {
+            return false;
+        }
+
+        throw e;
     }
 
     return true;
@@ -56,21 +58,12 @@ export async function publishPackage(
     ) {
         const registry = options.registry || 'https://registry.npmjs.org/';
         const url = new URL(registry);
+        const registryPath = url.pathname.replace(/\/$/, '');
 
-        publishOptions[`//${url.host}/:_authToken`] = options.token;
+        publishOptions[`//${url.host}${registryPath}/:_authToken`] = options.token;
     }
 
-    try {
-        await publisher.publish(pkgPath, pkg.content, publishOptions);
-
-        return true;
-    } catch (e) {
-        if (isNpmJsPublishVersionConflict(e) || isNpmPkgGitHubPublishVersionConflict(e)) {
-            return false;
-        }
-
-        throw e;
-    }
+    return publisher.publish(pkgPath, pkg.content, publishOptions);
 }
 
 export function isPackagePublishable(pkg: Package): boolean {

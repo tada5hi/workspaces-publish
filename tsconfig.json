@@ -6,6 +6,8 @@
         ],
         "module": "ESNext",
         "moduleResolution": "bundler",
+        "allowImportingTsExtensions": true,
+        "noEmit": true,
         "outDir": "dist",
         "target": "ES2022",
         "experimentalDecorators": true,

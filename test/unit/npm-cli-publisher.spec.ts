@@ -2,7 +2,7 @@ import path from 'node:path';
 import {
     describe, expect, it,
 } from 'vitest';
-import { NpmCliPublisher } from '../../src/core';
+import { NpmCliPublisher, PublishError } from '../../src/core/index.ts';
 
 function createFakeFs() {
     const files: Record<string, string> = {};
@@ -134,7 +134,7 @@ describe('src/core/publisher/npm-cli', () => {
     });
 
     it('should preserve existing .npmrc content during publish', async () => {
-        const { execFn, calls } = createFakeExec();
+        const { calls } = createFakeExec();
         const fs = createFakeFs();
         fs.files[path.join('/project/packages/a', '.npmrc')] = 'legacy-peer-deps=true\n';
 
@@ -287,7 +287,7 @@ describe('src/core/publisher/npm-cli', () => {
         expect(calls[0].args).not.toContain('--registry');
     });
 
-    it('should propagate exec errors', async () => {
+    it('should wrap exec errors in PublishError', async () => {
         const execFn = async () => {
             throw new Error('npm not found');
         };
@@ -300,7 +300,7 @@ describe('src/core/publisher/npm-cli', () => {
             '/project/packages/a',
             { name: 'pkg-a', version: '1.0.0' },
             {},
-        )).rejects.toThrow('npm not found');
+        )).rejects.toThrow(PublishError);
     });
 
     it('should clean up .npmrc after exec error', async () => {
@@ -325,7 +325,7 @@ describe('src/core/publisher/npm-cli', () => {
         expect(fs.unlinked).toContain(path.join('/project/packages/a', '.npmrc'));
     });
 
-    it('should normalize npmjs version conflict error from stderr', async () => {
+    it('should return false on npmjs EPUBLISHCONFLICT from stderr', async () => {
         const execFn = async () => {
             const err: Record<string, unknown> = new Error('Command failed');
             err.stderr = 'npm error code EPUBLISHCONFLICT';
@@ -336,19 +336,16 @@ describe('src/core/publisher/npm-cli', () => {
             execFn, readFileFn: fs.readFileFn, writeFileFn: fs.writeFileFn, unlinkFn: fs.unlinkFn,
         });
 
-        try {
-            await publisher.publish(
-                '/project/packages/a',
-                { name: 'pkg-a', version: '1.0.0' },
-                {},
-            );
-            expect.unreachable('should have thrown');
-        } catch (e: any) {
-            expect(e.code).toEqual('EPUBLISHCONFLICT');
-        }
+        const result = await publisher.publish(
+            '/project/packages/a',
+            { name: 'pkg-a', version: '1.0.0' },
+            {},
+        );
+
+        expect(result).toBe(false);
     });
 
-    it('should normalize npmjs 403 version conflict error from stderr', async () => {
+    it('should return false on npmjs 403 version conflict from stderr', async () => {
         const execFn = async () => {
             const err: Record<string, unknown> = new Error('Command failed');
             err.stderr = '403 Forbidden - You cannot publish over the previously published versions: 1.0.0.';
@@ -359,19 +356,16 @@ describe('src/core/publisher/npm-cli', () => {
             execFn, readFileFn: fs.readFileFn, writeFileFn: fs.writeFileFn, unlinkFn: fs.unlinkFn,
         });
 
-        try {
-            await publisher.publish(
-                '/project/packages/a',
-                { name: 'pkg-a', version: '1.0.0' },
-                {},
-            );
-            expect.unreachable('should have thrown');
-        } catch (e: any) {
-            expect(e.code).toEqual('EPUBLISHCONFLICT');
-        }
+        const result = await publisher.publish(
+            '/project/packages/a',
+            { name: 'pkg-a', version: '1.0.0' },
+            {},
+        );
+
+        expect(result).toBe(false);
     });
 
-    it('should normalize GitHub Packages 409 conflict error from stderr', async () => {
+    it('should return false on GitHub Packages 409 conflict from stderr', async () => {
         const execFn = async () => {
             const err: Record<string, unknown> = new Error('Command failed');
             err.stderr = '409 Conflict - Cannot publish over existing version';
@@ -382,15 +376,12 @@ describe('src/core/publisher/npm-cli', () => {
             execFn, readFileFn: fs.readFileFn, writeFileFn: fs.writeFileFn, unlinkFn: fs.unlinkFn,
         });
 
-        try {
-            await publisher.publish(
-                '/project/packages/a',
-                { name: 'pkg-a', version: '1.0.0' },
-                {},
-            );
-            expect.unreachable('should have thrown');
-        } catch (e: any) {
-            expect(e.code).toEqual('E409');
-        }
+        const result = await publisher.publish(
+            '/project/packages/a',
+            { name: 'pkg-a', version: '1.0.0' },
+            {},
+        );
+
+        expect(result).toBe(false);
     });
 });

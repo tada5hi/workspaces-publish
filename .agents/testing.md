@@ -23,13 +23,14 @@ Test configuration is in `test/vitest.config.ts`. Tests are located in `test/uni
 ```
 test/
 ├── unit/
-│   ├── module.spec.ts              # Publish orchestrator (9 tests)
-│   ├── package.spec.ts             # Package logic (11 tests)
+│   ├── module.spec.ts              # Publish orchestrator (10 tests)
+│   ├── package.spec.ts             # Package logic (17 tests)
 │   ├── package-dependency.spec.ts  # Workspace dep resolution (7 tests)
-│   ├── npm-cli-publisher.spec.ts   # NpmCliPublisher (6 tests)
+│   ├── npm-cli-publisher.spec.ts   # NpmCliPublisher (18 tests)
+│   ├── resolve-publisher.spec.ts   # Publisher resolution (5 tests)
 │   ├── oidc-token-provider.spec.ts # OIDC flow (8 tests)
 │   ├── chain-token-provider.spec.ts # Chain fallback (4 tests)
-│   └── token-provider.spec.ts      # Static/Env/Memory providers (7 tests)
+│   └── token-provider.spec.ts      # Static/Env/Memory providers (6 tests)
 ├── data/                           # Test fixture data
 │   ├── package.json                # Mock monorepo root
 │   └── packages/
@@ -57,7 +58,7 @@ Tests use **injected memory/fake adapters** instead of `vi.mock`. This is a core
 import {
     MemoryFileSystem, MemoryPublisher,
     MemoryRegistryClient, MemoryTokenProvider, NoopLogger,
-} from '../../src/core';
+} from '../../src/core/index.ts';
 
 const packages = await publish({
     cwd: '/project',
@@ -76,8 +77,8 @@ const packages = await publish({
 | Adapter                | What it fakes                     | Test utility                           |
 |------------------------|-----------------------------------|----------------------------------------|
 | `MemoryFileSystem`     | File reads, writes, glob          | Constructor accepts `Record<path, content>` |
-| `MemoryRegistryClient` | Registry packument queries        | Constructor accepts `Record<name, Packument>` |
-| `MemoryPublisher`      | Publish                           | `.published` array records all publish calls |
+| `MemoryRegistryClient` | Registry packument queries        | Constructor accepts `Record<name, Packument>`, throws `RegistryError(404)` for missing packages |
+| `MemoryPublisher`      | Publish                           | `.published` array records all publish calls, returns `true` |
 | `MemoryTokenProvider`  | Token resolution                  | Constructor accepts optional token string |
 | `NoopLogger`           | Logging output                    | All methods are no-ops                  |
 
@@ -100,22 +101,23 @@ const provider = new OidcTokenProvider({
 
 ## Coverage
 
-Coverage reports are generated with `@vitest/coverage-v8`. Current coverage: 52 tests across 7 files.
+Coverage reports are generated with `@vitest/coverage-v8`. Current coverage: 75 tests across 8 files.
 
 Areas covered:
-- Full publish pipeline (publish, skip, private, dryRun, workspace deps)
-- Package publishability and version checking
+- Full publish pipeline (publish, skip, private, dryRun, workspace deps, invalid JSON)
+- Package publishability, version checking, transient vs 404 registry errors
 - Workspace protocol resolution (^, ~, *)
 - OIDC token flow (fetch, exchange, cache, errors, audience, encoding)
 - Token provider chain fallback
 - Static, env, and memory token providers
 - Tokenless publishing
-- NpmCliPublisher (args, env, cwd, registry, access, error propagation)
+- NpmCliPublisher (args, env, cwd, registry, access, .npmrc handling, version conflict detection, PublishError wrapping)
+- Publisher resolution (npm CLI detection, fallback to libnpmpublish)
 
 ## Writing New Tests
 
 1. Place test files in `test/unit/` with the `.spec.ts` extension
-2. Use memory adapters from `../../src/core` — never `vi.mock`
+2. Use memory adapters from `../../src/core/index.ts` — never `vi.mock`
 3. For new ports: create a memory adapter in the corresponding `src/core/<domain>/` folder
 4. For HTTP-dependent adapters: accept a `fetchFn` or `execFn` parameter for injectable fakes
 5. Run `npm run test` to verify, then `npm run test:coverage` to check coverage

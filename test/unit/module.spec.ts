@@ -4,8 +4,8 @@ import {
 import {
     MemoryFileSystem, MemoryPublisher,
     MemoryRegistryClient, MemoryTokenProvider, NoopLogger,
-} from '../../src/core';
-import { publish } from '../../src/module';
+} from '../../src/core/index.ts';
+import { publish } from '../../src/module.ts';
 
 function createTestFileSystem() {
     return new MemoryFileSystem({
@@ -174,6 +174,16 @@ describe('src/module', () => {
         const opts = publisher.published[0].options;
         const authKeys = Object.keys(opts).filter((k) => k.includes(':_authToken'));
         expect(authKeys.length).toEqual(0);
+    });
+
+    it('should throw descriptive error on invalid root package.json JSON', async () => {
+        const fs = new MemoryFileSystem({
+            '/project/package.json': '{ invalid json',
+        });
+
+        await expect(publish(createTestOptions({ fileSystem: fs }))).rejects.toThrow(
+            'Invalid JSON in package.json at /project/package.json',
+        );
     });
 
     it('should return empty array when no workspaces and rootPackage is false', async () => {

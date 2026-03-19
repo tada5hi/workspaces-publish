@@ -5,9 +5,10 @@
  * view the LICENSE file that was distributed with this source code.
  */
 
-export * from './filesystem';
-export * from './logger';
-export * from './package';
-export * from './publisher';
-export * from './registry-client';
-export * from './token-provider';
+export * from './error.ts';
+export * from './filesystem/index.ts';
+export * from './logger/index.ts';
+export * from './package/index.ts';
+export * from './publisher/index.ts';
+export * from './registry-client/index.ts';
+export * from './token-provider/index.ts';
