@@ -18,20 +18,49 @@ const execFileAsync = promisify(execFile);
 
 const AUTH_TOKEN_PATTERN = /^(\/\/.+)\/:_authToken$/;
 
-function parseAuthTokenEntry(options: Record<string, any>): { key: string; token: string; registryPath: string } | undefined {
+/**
+ * Extract the auth token entry from publish options.
+ *
+ * When `registry` is provided, prefers the entry whose scope matches
+ * the target registry (host + path). Falls back to the first match
+ * if no registry-specific entry is found.
+ */
+function parseAuthTokenEntry(
+    options: Record<string, any>,
+    registry?: string,
+): { key: string; token: string; registryPath: string } | undefined {
+    let registryScope: string | undefined;
+    if (registry) {
+        try {
+            const url = new URL(registry);
+            registryScope = `//${url.host}${url.pathname.replace(/\/$/, '')}`;
+        } catch {
+            // invalid registry URL — skip scope matching
+        }
+    }
+
+    let fallback: { key: string; token: string; registryPath: string } | undefined;
     const keys = Object.keys(options);
     for (const key of keys) {
         const match = AUTH_TOKEN_PATTERN.exec(key);
         if (match && options[key]) {
-            return {
+            const entry = {
                 key,
                 token: options[key],
                 registryPath: match[1],
             };
+
+            if (registryScope && match[1] === registryScope) {
+                return entry;
+            }
+
+            if (!fallback) {
+                fallback = entry;
+            }
         }
     }
 
-    return undefined;
+    return fallback;
 }
 
 type ReadFileFn = (filePath: string, encoding: string) => Promise<string>;
@@ -81,7 +110,7 @@ export class NpmCliPublisher implements IPackagePublisher {
     ): Promise<boolean> {
         const args = ['publish'];
 
-        const authEntry = parseAuthTokenEntry(options);
+        const authEntry = parseAuthTokenEntry(options, options.registry);
 
         if (options.registry) {
             args.push('--registry', options.registry);
@@ -106,9 +135,14 @@ export class NpmCliPublisher implements IPackagePublisher {
             env.NODE_AUTH_TOKEN = authEntry.token;
 
             const registryUrl = options.registry || `https:${authEntry.registryPath}`;
-            const url = new URL(registryUrl);
-            const registryPath = url.pathname.replace(/\/$/, '');
-            const npmrcContent = `//${url.host}${registryPath}/:_authToken=\${NODE_AUTH_TOKEN}\n`;
+            let npmrcContent: string;
+            try {
+                const url = new URL(registryUrl);
+                const registryPath = url.pathname.replace(/\/$/, '');
+                npmrcContent = `//${url.host}${registryPath}/:_authToken=\${NODE_AUTH_TOKEN}\n`;
+            } catch {
+                throw new PublishError(`Invalid registry URL: ${registryUrl}`);
+            }
 
             npmrcPath = path.join(packagePath, '.npmrc');
 
