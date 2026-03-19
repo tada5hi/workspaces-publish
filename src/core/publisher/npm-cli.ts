@@ -107,7 +107,8 @@ export class NpmCliPublisher implements IPackagePublisher {
 
             const registryUrl = options.registry || `https:${authEntry.registryPath}`;
             const url = new URL(registryUrl);
-            const npmrcContent = `//${url.host}/:_authToken=\${NODE_AUTH_TOKEN}\n`;
+            const registryPath = url.pathname.replace(/\/$/, '');
+            const npmrcContent = `//${url.host}${registryPath}/:_authToken=\${NODE_AUTH_TOKEN}\n`;
 
             npmrcPath = path.join(packagePath, '.npmrc');
 

@@ -58,8 +58,9 @@ export async function publishPackage(
     ) {
         const registry = options.registry || 'https://registry.npmjs.org/';
         const url = new URL(registry);
+        const registryPath = url.pathname.replace(/\/$/, '');
 
-        publishOptions[`//${url.host}/:_authToken`] = options.token;
+        publishOptions[`//${url.host}${registryPath}/:_authToken`] = options.token;
     }
 
     return publisher.publish(pkgPath, pkg.content, publishOptions);
