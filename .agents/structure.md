@@ -16,18 +16,21 @@ workspaces-publish/
 │   ├── types.ts                        # PublishOptions type (references port interfaces)
 │   ├── core/                           # Hexagonal architecture: ports & adapters
 │   │   ├── index.ts                    # Barrel export for all core modules
+│   │   ├── error.ts                    # BaseError class (code, statusCode)
 │   │   ├── filesystem/                 # File system port
 │   │   │   ├── types.ts                # IFileSystem interface
-│   │   │   ├── node-filesystem.ts      # Real adapter (node:fs + fast-glob)
-│   │   │   ├── memory-filesystem.ts    # Fake adapter (in-memory Map)
+│   │   │   ├── node.ts                 # Real adapter (node:fs + fast-glob)
+│   │   │   ├── memory.ts              # Fake adapter (in-memory Map)
 │   │   │   └── index.ts
 │   │   ├── registry-client/            # Registry packument port
 │   │   │   ├── types.ts                # IRegistryClient, Packument, PackumentVersion
-│   │   │   ├── hapic-registry-client.ts # Real adapter (hapic HTTP)
-│   │   │   ├── memory-registry-client.ts # Fake adapter (in-memory store)
+│   │   │   ├── error.ts                # RegistryError, isRegistryError()
+│   │   │   ├── hapic.ts               # Real adapter (hapic HTTP)
+│   │   │   ├── memory.ts              # Fake adapter (in-memory store)
 │   │   │   └── index.ts
 │   │   ├── publisher/                  # Package publish port
 │   │   │   ├── types.ts                # IPackagePublisher interface
+│   │   │   ├── error.ts                # PublishError class
 │   │   │   ├── npm-cli.ts              # Primary adapter (shells out to npm CLI)
 │   │   │   ├── npm.ts                  # Fallback adapter (libnpmpack + libnpmpublish)
 │   │   │   ├── resolve.ts              # Factory: detects npm CLI version, picks adapter
@@ -35,30 +38,29 @@ workspaces-publish/
 │   │   │   └── index.ts
 │   │   ├── token-provider/             # Authentication port
 │   │   │   ├── types.ts                # ITokenProvider interface
-│   │   │   ├── static-token-provider.ts # Wraps a plain string token
-│   │   │   ├── env-token-provider.ts   # Reads NODE_AUTH_TOKEN env var
-│   │   │   ├── oidc-token-provider.ts  # GitHub OIDC → npm token exchange
-│   │   │   ├── chain-token-provider.ts # Tries providers in order
-│   │   │   ├── memory-token-provider.ts # Fake adapter for tests
+│   │   │   ├── memory.ts              # Wraps an optional string token
+│   │   │   ├── env.ts                 # Reads NODE_AUTH_TOKEN env var
+│   │   │   ├── oidc.ts               # GitHub OIDC → npm token exchange
+│   │   │   ├── chain.ts              # Tries providers in order
 │   │   │   └── index.ts
 │   │   ├── logger/                     # Logging port
 │   │   │   ├── types.ts                # ILogger interface
-│   │   │   ├── consola-logger.ts       # Real adapter (wraps consola)
-│   │   │   ├── noop-logger.ts          # Silent adapter for tests
+│   │   │   ├── consola.ts             # Real adapter (wraps consola)
+│   │   │   ├── noop.ts               # Silent adapter for tests
 │   │   │   └── index.ts
 │   │   └── package/                    # Domain model types
 │   │       ├── types.ts                # PackageJson, Package
 │   │       └── index.ts
 │   └── utils/                          # Small utility functions
 │       ├── index.ts
-│       ├── is-npm-js-publish-version-conflict.ts
-│       ├── is-npm-pkg-github-version-conflict.ts
-│       └── object.ts
+│       └── object.ts                   # isObject(), isError() duck-type helpers
 ├── test/
 │   ├── unit/                           # Vitest unit tests
 │   │   ├── module.spec.ts              # Publish orchestrator tests
 │   │   ├── package.spec.ts             # Package logic tests
 │   │   ├── package-dependency.spec.ts  # Workspace dep resolution tests
+│   │   ├── npm-cli-publisher.spec.ts   # NpmCliPublisher tests
+│   │   ├── resolve-publisher.spec.ts   # Publisher resolution tests
 │   │   ├── oidc-token-provider.spec.ts # OIDC flow tests
 │   │   ├── chain-token-provider.spec.ts # Chain fallback tests
 │   │   └── token-provider.spec.ts      # Static/Env/Memory provider tests
@@ -83,13 +85,11 @@ workspaces-publish/
 │   ├── structure.md                    # This file
 │   ├── architecture.md                 # Hexagonal design & data flow
 │   ├── testing.md                      # Test setup & conventions
-│   ├── conventions.md                  # Code style & workflow rules
-│   └── plans/                          # Follow-up implementation plans
-│       └── npm-cli-publisher.md        # Plan: prefer npm CLI over libnpmpublish
+│   └── conventions.md                  # Code style & workflow rules
 ├── package.json
 ├── tsconfig.json
 ├── rollup.config.mjs                   # Rollup bundler config
-├── .eslintrc                           # ESLint config
+├── eslint.config.js                    # ESLint flat config
 ├── commitlint.config.cjs              # Conventional commit enforcement
 ├── .editorconfig
 ├── release-please-config.json
@@ -108,7 +108,8 @@ workspaces-publish/
 | `constants.ts`         | Default registry URLs                                                |
 | `types.ts`             | `PublishOptions` type (references all port interfaces)               |
 | `core/`                | Hexagonal port interfaces and their adapter implementations          |
-| `utils/`               | Version-conflict detection and object helpers                        |
+| `core/error.ts`        | `BaseError` base class with `code` and `statusCode`                  |
+| `utils/`               | `isObject()` and `isError()` duck-type helpers                       |
 
 ## Core Domain Modules
 
@@ -117,8 +118,8 @@ Each folder under `src/core/` contains a port interface (`types.ts`), one or mor
 | Domain           | Port Interface      | Key Types                    |
 |------------------|---------------------|------------------------------|
 | `filesystem/`    | `IFileSystem`       | readFile, writeFile, glob    |
-| `registry-client/` | `IRegistryClient` | Packument, PackumentVersion  |
-| `publisher/`     | `IPackagePublisher` | pack, publish                |
+| `registry-client/` | `IRegistryClient` | Packument, PackumentVersion, RegistryError |
+| `publisher/`     | `IPackagePublisher` | publish (returns boolean), PublishError |
 | `token-provider/`| `ITokenProvider`    | getToken(packageName, registry) |
 | `logger/`        | `ILogger`           | info, success, warn, error   |
 | `package/`       | (domain types only) | PackageJson, Package         |

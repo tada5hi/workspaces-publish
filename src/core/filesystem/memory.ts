@@ -34,8 +34,6 @@ export class MemoryFileSystem implements IFileSystem {
         this.files.set(this.normalize(filePath), content);
     }
 
-    // ----------------------------------------------------
-
     async glob(
         patterns: string[],
         options: { cwd?: string; ignore?: string[] } = {},
@@ -65,8 +63,6 @@ export class MemoryFileSystem implements IFileSystem {
 
         return Array.from(dirs);
     }
-
-    // ----------------------------------------------------
 
     getFile(filePath: string): string | undefined {
         return this.files.get(this.normalize(filePath));

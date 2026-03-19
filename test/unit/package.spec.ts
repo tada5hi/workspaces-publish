@@ -7,7 +7,7 @@ import {
 import {
     isPackagePublishable, isPackagePublished, publishPackage,
 } from '../../src/package.ts';
-import type { Package, IRegistryClient, Packument } from '../../src/core/index.ts';
+import type { IRegistryClient, Package, Packument } from '../../src/core/index.ts';
 
 function createFakeFs() {
     const files: Record<string, string> = {};

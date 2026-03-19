@@ -35,7 +35,7 @@
         "commit": "npx git-cz",
         "test": "cross-env NODE_ENV=test vitest run --config test/vitest.config.ts",
         "test:coverage": "cross-env NODE_ENV=test vitest run --config test/vitest.config.ts --coverage",
-        "lint": "eslint ./src",
+        "lint": "eslint .",
         "lint:fix": "npm run lint -- --fix",
         "prepare": "husky install",
         "dev": "ts-node src/cli.ts",

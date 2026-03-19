@@ -48,14 +48,16 @@ Adapters: `HapicRegistryClient` (hapic HTTP), `MemoryRegistryClient` (in-memory 
 
 ```typescript
 interface IPackagePublisher {
-    publish(packagePath: string, manifest: PackageJson, options: Record<string, any>): Promise<void>;
+    publish(packagePath: string, manifest: PackageJson, options: Record<string, any>): Promise<boolean>;
 }
 ```
+
+Returns `true` if published, `false` if the version already exists (conflict). Throws `PublishError` on non-conflict failures.
 
 Adapters:
 - `NpmCliPublisher` — shells out to `npm publish` (primary, used when npm >= 10.0.0)
 - `NpmPublisher` — uses libnpmpack + libnpmpublish (fallback)
-- `MemoryPublisher` — records calls (for tests)
+- `MemoryPublisher` — records calls (for tests), always returns `true`
 
 Use `resolvePublisher()` factory to auto-detect the best adapter.
 
@@ -156,20 +158,22 @@ Shells out to `npm publish` with flags derived from the options object:
 | `access` | `--access <value>` |
 | `tag` | `--tag <value>` |
 
-**Error normalization**: `npm publish` exits non-zero on failure. The `normalizeError()` method inspects `stderr` and `message` to translate known patterns into error objects that match what `isNpmJsPublishVersionConflict()` and `isNpmPkgGitHubPublishVersionConflict()` expect:
+**Version conflict detection**: `npm publish` exits non-zero on failure. The private `isVersionConflict()` method inspects `stderr` and `message` directly for known conflict patterns:
 
-| stderr pattern | Normalized code |
-|----------------|----------------|
-| `EPUBLISHCONFLICT` | `EPUBLISHCONFLICT` |
-| `You cannot publish over the previously published versions` | `EPUBLISHCONFLICT` |
-| `Cannot publish over existing version` | `E409` |
-| `409 Conflict` | `E409` |
+| stderr pattern | Meaning |
+|----------------|---------|
+| `EPUBLISHCONFLICT` | npmjs.org rejects duplicate version |
+| `You cannot publish over the previously published versions` | npmjs.org pre-check (npm >= 10) |
+| `Cannot publish over existing version` | GitHub Packages 409 |
+| `409 Conflict` | GitHub Packages 409 |
 
-This is critical — without normalization, version-conflict errors from the npm CLI would throw instead of being treated as no-ops.
+When a conflict is detected, `publish()` returns `false` instead of throwing. Non-conflict errors are wrapped in `PublishError`.
 
 ### NpmPublisher (fallback)
 
 Uses `libnpmpack(packagePath)` to create a tarball, then `libnpmpublish.publish(manifest, tarball, options)`. This adapter receives the auth token and registry via the options object directly (libnpmpublish's native format: `{ '//registry.npmjs.org/:_authToken': 'token' }`).
+
+Version conflicts from libnpmpublish (structured error objects with `.code` like `EPUBLISHCONFLICT`, `E403`, `E409`) are detected by private `isNpmJsVersionConflict()` and `isNpmPkgGitHubVersionConflict()` methods and return `false`. Non-conflict errors are wrapped in `PublishError`.
 
 ## Authentication Flow
 
@@ -239,20 +243,34 @@ Pure logic in `package-dependency.ts` — rewrites `workspace:*`/`^`/`~` to conc
 
 ### 4. Version Conflict Detection
 
-Two utilities handle registry-specific conflict responses:
-- `is-npm-js-publish-version-conflict.ts` — npmjs.org errors (`EPUBLISHCONFLICT`, `E403`)
-- `is-npm-pkg-github-version-conflict.ts` — GitHub Packages errors (`E409`)
+Each publisher adapter handles its own conflict detection internally:
+- `NpmCliPublisher` — private `isVersionConflict()` inspects `stderr`/`message` for known patterns
+- `NpmPublisher` — private `isNpmJsVersionConflict()` and `isNpmPkgGitHubVersionConflict()` inspect structured error objects from libnpmpublish
 
-These treat "already published" as a non-error condition. `NpmCliPublisher` normalizes CLI stderr into matching error objects so the same detection logic works for both adapters.
+Both return `false` from `publish()` on conflict instead of throwing. This keeps conflict handling co-located with the adapter that produces the errors.
 
 ### 5. Publisher Selection
 
 `resolvePublisher()` prefers `NpmCliPublisher` (npm >= 10.0.0) over `NpmPublisher` (libnpmpublish). The npm CLI handles OIDC, provenance, and other registry features natively. The libnpmpublish fallback exists for environments without a suitable npm CLI.
 
+## Error Class Hierarchy
+
+A base error class in `src/core/error.ts` provides typed `code` and `statusCode` fields:
+
+```
+BaseError (code, statusCode)
+├── RegistryError    — thrown by registry client adapters (e.g. 404 not found, 500 server error)
+└── PublishError     — thrown by publisher adapters on non-conflict failures
+```
+
+Duck-type guards (`isRegistryError()`, `isError()`, `isObject()`) are used instead of `instanceof` for cross-realm safety.
+
 ## Error Handling
 
-- Registry network errors are propagated to the caller
-- Version conflicts (already published) are caught and treated as successful no-ops
+- Registry errors are typed via `RegistryError` — 404s (package not found) are treated as "not published", all other status codes propagate
+- Version conflicts (already published) are handled inside each publisher adapter — `publish()` returns `false`
 - Invalid package configurations (missing name, version) cause the package to be skipped
-- OIDC failures in `ChainTokenProvider` fall through to the next provider
-- npm CLI errors are normalized to match expected error codes before conflict detection
+- OIDC failures in `ChainTokenProvider` propagate (the chain only falls through on `undefined` return, not on thrown errors)
+- Non-conflict publish failures are wrapped in `PublishError` with the original error as `cause`
+- Invalid root `package.json` JSON produces a descriptive error message
+- Invalid registry URLs are caught in the CLI before any publish attempt

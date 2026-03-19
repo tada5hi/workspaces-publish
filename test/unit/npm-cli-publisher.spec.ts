@@ -134,7 +134,7 @@ describe('src/core/publisher/npm-cli', () => {
     });
 
     it('should preserve existing .npmrc content during publish', async () => {
-        const { execFn, calls } = createFakeExec();
+        const { calls } = createFakeExec();
         const fs = createFakeFs();
         fs.files[path.join('/project/packages/a', '.npmrc')] = 'legacy-peer-deps=true\n';
 
