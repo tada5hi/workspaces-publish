@@ -82,14 +82,16 @@ function updatePackageDependenciesByType(
         }
 
         const depPkg = pkgDir[key];
-
-        let value = dependencies[key];
-
-        if (isDependencyWorkspaceProtocolValue(value)) {
-            value = value.substring(10);
-
-            dependencies[key] = normalizeDependencyVersionValue(value, depPkg.content.version);
-            pkg.modified = true;
+        if (!depPkg) {
+            continue;
         }
+
+        const value = dependencies[key];
+        if (!value || !isDependencyWorkspaceProtocolValue(value)) {
+            continue;
+        }
+
+        dependencies[key] = normalizeDependencyVersionValue(value.substring(10), depPkg.content.version);
+        pkg.modified = true;
     }
 }

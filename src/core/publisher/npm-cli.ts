@@ -43,14 +43,15 @@ function parseAuthTokenEntry(
     const keys = Object.keys(options);
     for (const key of keys) {
         const match = AUTH_TOKEN_PATTERN.exec(key);
-        if (match && options[key]) {
+        const registryPath = match?.[1];
+        if (match && registryPath && options[key]) {
             const entry = {
                 key,
                 token: options[key],
-                registryPath: match[1],
+                registryPath,
             };
 
-            if (registryScope && match[1] === registryScope) {
+            if (registryScope && registryPath === registryScope) {
                 return entry;
             }
 

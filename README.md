@@ -1,26 +1,28 @@
 # workspaces-publish
 
 [![npm version](https://badge.fury.io/js/workspaces-publish.svg)](https://badge.fury.io/js/workspaces-publish)
-[![Master Workflow](https://github.com/Tada5hi/workspaces-publish/workflows/CI/badge.svg)](https://github.com/Tada5hi/workspaces-publish)
-[![Known Vulnerabilities](https://snyk.io/test/github/Tada5hi/workspaces-publish/badge.svg?targetFile=package.json)](https://snyk.io/test/github/Tada5hi/workspaces-publish?targetFile=package.json)
+[![CI](https://github.com/Tada5hi/workspaces-publish/workflows/CI/badge.svg)](https://github.com/Tada5hi/workspaces-publish)
 [![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-%23FE5196?logo=conventionalcommits&logoColor=white)](https://conventionalcommits.org)
 
-This library facilitates the publication of packages encompassing multiple workspaces as defined in a package.json file.
-It determines the unpublished packages by checking each package manifest of the registry,
-if one already exists.
-
-At best, it should be used with a library that increments the version of the packages beforehand
-(e.g. [release-please](https://github.com/googleapis/release-please)).
+A CLI tool and library for publishing packages from npm workspaces to registries (npmjs.org, GitHub Packages, etc.).
+It determines which workspace packages haven't been published yet by checking each package's version against the registry,
+and publishes only what's needed — making it ideal for CI/CD pipelines alongside [release-please](https://github.com/googleapis/release-please).
 
 When npm >= 10.0.0 is available, it shells out to `npm publish` directly (supporting OIDC, provenance, etc. out of the box).
 Otherwise it falls back to [libnpmpublish](https://www.npmjs.com/package/libnpmpublish) / [libnpmpack](https://www.npmjs.com/package/libnpmpack).
 
 **Table of Contents**
+- [Requirements](#requirements)
 - [Installation](#installation)
 - [Usage](#usage)
 - [Authentication](#authentication)
 - [Programmatic API](#programmatic-api)
 - [CI](#ci)
+
+## Requirements
+
+- **Node.js** >= 22.0.0
+- **npm** 7+ (workspace support required)
 
 ## Installation
 
@@ -40,50 +42,37 @@ npx workspaces-publish \
 
 ### Options
 
-#### token
-- Type: `String`
-- Default: `process.env.NODE_AUTH_TOKEN`
-- Description: Token for the registry. Optional when using OIDC trusted publishing.
-
-#### registry
-- Type: `String`
-- Default: `https://registry.npmjs.org/`
-- Description: Registry url.
-
-#### root
-- Type: `String`
-- Default: `process.cwd()`
-- Description: Directory where the root package is located.
-
-#### rootPackage
-- Type: `Boolean`
-- Default: `true`
-- Description: Also consider the root package for publishing. The library still
-  checks whether a name- & version-property is set and whether the private property evaluates to false.
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `--token <token>` | `string` | `NODE_AUTH_TOKEN` env var | Token for the registry. Optional when using OIDC trusted publishing. |
+| `--registry <registry>` | `string` | `https://registry.npmjs.org/` | Registry URL to publish to. |
+| `--root <root>` | `string` | `process.cwd()` | Directory where the root `package.json` is located. |
+| `--rootPackage` | `boolean` | `true` | Also consider the root package for publishing (skipped if `private: true` or missing `name`/`version`). |
 
 ## Authentication
 
-The library supports three authentication methods, resolved in the following order:
+The tool supports three authentication methods, resolved in the following order:
 
-1. **`--token` CLI flag** — Explicit npm access token
-2. **OIDC Trusted Publishing** — Tokenless publishing via GitHub Actions OIDC (auto-detected)
-3. **`NODE_AUTH_TOKEN` environment variable** — Fallback to the environment variable
+1. **`--token` CLI flag** — Explicit npm access token, used as-is.
+2. **OIDC Trusted Publishing** — Tokenless publishing via GitHub Actions OIDC (auto-detected when no `--token` flag is given). Falls back to `NODE_AUTH_TOKEN` if OIDC fails.
+3. **`NODE_AUTH_TOKEN` environment variable** — Default fallback.
 
 ### OIDC Trusted Publishing
 
-When running in GitHub Actions with [trusted publishers](https://docs.npmjs.com/trusted-publishers/) configured, the library automatically detects the OIDC environment and exchanges short-lived tokens with the npm registry — no long-lived `NPM_TOKEN` required.
+When running in GitHub Actions with [trusted publishers](https://docs.npmjs.com/trusted-publishers/) configured, the tool automatically detects the OIDC environment and exchanges short-lived, per-package tokens with the npm registry — no long-lived `NPM_TOKEN` secret required.
 
 **Requirements:**
-- npm trusted publisher configured for each package on npmjs.com
+- npm trusted publisher configured for each package on [npmjs.com](https://www.npmjs.com)
 - GitHub Actions workflow with `id-token: write` permission
-- Node.js >= 22.0.0
-- No `--token` flag or `NODE_AUTH_TOKEN` set (OIDC activates only when no explicit token is present)
+- No `--token` flag set (OIDC is bypassed when an explicit token is provided)
 
 **How it works:**
 1. Detects `ACTIONS_ID_TOKEN_REQUEST_URL` and `ACTIONS_ID_TOKEN_REQUEST_TOKEN` environment variables
 2. Requests an OIDC identity token from GitHub with audience `npm:<registry-host>`
 3. Exchanges the identity token with the npm registry for a short-lived, package-scoped publish token
-4. Uses that token for publishing (each package gets its own token)
+4. Uses that token for publishing (each package gets its own scoped token)
+
+If OIDC token exchange fails for a package, it falls back to `NODE_AUTH_TOKEN` automatically via the chain provider.
 
 ## Programmatic API
 
@@ -99,13 +88,30 @@ const packages = await publish({
 });
 ```
 
+The `publish()` function returns an array of `Package` objects for each successfully published package.
+
+### Options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `cwd` | `string` | `process.cwd()` | Root directory of the monorepo. |
+| `registry` | `string` | `https://registry.npmjs.org/` | Registry URL. |
+| `token` | `string` | — | Auth token (wrapped in `MemoryTokenProvider` internally). |
+| `rootPackage` | `boolean` | `true` | Include the root package as a publish candidate. |
+| `dryRun` | `boolean` | `false` | Resolve dependencies and check versions without actually publishing. |
+| `fileSystem` | `IFileSystem` | `NodeFileSystem` | File system adapter. |
+| `registryClient` | `IRegistryClient` | `HapicRegistryClient` | Registry metadata adapter. |
+| `publisher` | `IPackagePublisher` | Auto-detected | Publisher adapter (npm CLI or libnpmpublish). |
+| `tokenProvider` | `ITokenProvider` | `EnvTokenProvider` | Token resolution adapter (overrides `token`). |
+| `logger` | `ILogger` | — | Logger adapter. |
+
 ### Custom Adapters
 
-The library uses a hexagonal architecture (ports & adapters). All external I/O is abstracted behind interfaces, making it fully testable and extensible:
+The library uses a hexagonal architecture — all external I/O is behind port interfaces, making it fully testable and extensible:
 
 ```typescript
-import { publish } from 'workspaces-publish';
 import {
+    publish,
     MemoryFileSystem,
     MemoryRegistryClient,
     MemoryPublisher,
@@ -113,7 +119,6 @@ import {
     NoopLogger,
 } from 'workspaces-publish';
 
-// Use memory adapters for testing
 const packages = await publish({
     cwd: '/project',
     fileSystem: new MemoryFileSystem({ /* virtual files */ }),
@@ -126,20 +131,19 @@ const packages = await publish({
 
 Available port interfaces and their adapters:
 
-| Port | Real Adapter | Test Adapter |
-|------|-------------|-------------|
+| Port | Real Adapters | Test Adapter |
+|------|--------------|--------------|
 | `IFileSystem` | `NodeFileSystem` | `MemoryFileSystem` |
 | `IRegistryClient` | `HapicRegistryClient` | `MemoryRegistryClient` |
-| `IPackagePublisher` | `NpmCliPublisher` (npm CLI), `NpmPublisher` (libnpmpublish fallback) | `MemoryPublisher` |
-| `ITokenProvider` | `StaticTokenProvider`, `EnvTokenProvider`, `OidcTokenProvider`, `ChainTokenProvider` | `MemoryTokenProvider` |
+| `IPackagePublisher` | `NpmCliPublisher`, `NpmPublisher` | `MemoryPublisher` |
+| `ITokenProvider` | `MemoryTokenProvider`, `EnvTokenProvider`, `OidcTokenProvider`, `ChainTokenProvider` | `MemoryTokenProvider` |
 | `ILogger` | `ConsolaLogger` | `NoopLogger` |
 
 ## CI
 
-### GitHub Action (with npm token)
+### GitHub Actions (with npm token)
 
-The library can be used in combination with [release-please](https://github.com/googleapis/release-please),
-as release-please only increases the versions in the monorepo, but does not release the packages.
+Use with [release-please](https://github.com/googleapis/release-please) — it bumps versions and creates release PRs, then `workspaces-publish` handles the actual publishing:
 
 ```yaml
 on:
@@ -164,7 +168,7 @@ jobs:
                 if: steps.release.outputs.releases_created == 'true'
                 uses: actions/checkout@v4
 
-            -   name: Install Node.JS
+            -   name: Install Node.js
                 if: steps.release.outputs.releases_created == 'true'
                 uses: actions/setup-node@v4
                 with:
@@ -181,9 +185,9 @@ jobs:
                     NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 ```
 
-### GitHub Action (with OIDC Trusted Publishing)
+### GitHub Actions (with OIDC Trusted Publishing)
 
-No npm token secrets needed — configure [trusted publishers](https://docs.npmjs.com/trusted-publishers/) on npmjs.com for each package instead.
+No npm token secrets needed — configure [trusted publishers](https://docs.npmjs.com/trusted-publishers/) on npmjs.com for each package instead:
 
 ```yaml
 on:
@@ -209,7 +213,7 @@ jobs:
                 if: steps.release.outputs.releases_created == 'true'
                 uses: actions/checkout@v4
 
-            -   name: Install Node.JS
+            -   name: Install Node.js
                 if: steps.release.outputs.releases_created == 'true'
                 uses: actions/setup-node@v4
                 with:
@@ -223,3 +227,7 @@ jobs:
                 if: steps.release.outputs.releases_created == 'true'
                 run: npx workspaces-publish
 ```
+
+## License
+
+MIT

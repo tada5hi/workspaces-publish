@@ -54,8 +54,8 @@
     },
     "devDependencies": {
         "@tada5hi/commitlint-config": "^1.2.7",
-        "@tada5hi/eslint-config": "^2.0.1",
-        "@tada5hi/tsconfig": "^0.7.0",
+        "@tada5hi/eslint-config": "^2.0.2",
+        "@tada5hi/tsconfig": "^0.7.2",
         "@types/libnpmpublish": "^9.0.1",
         "@types/node": "^25.5.0",
         "@types/pacote": "^11.1.8",
