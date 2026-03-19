@@ -1,8 +1,8 @@
 import {
     describe, expect, it,
 } from 'vitest';
-import { updatePackagesDependencies } from '../../src/package-dependency';
-import type { Package } from '../../src/core/package/types';
+import { updatePackagesDependencies } from '../../src/package-dependency.ts';
+import type { Package } from '../../src/core/index.ts';
 
 describe('src/package-dependency', () => {
     it('should resolve workspace:^ to ^version', () => {

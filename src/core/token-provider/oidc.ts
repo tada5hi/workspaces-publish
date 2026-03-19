@@ -5,7 +5,7 @@
  * view the LICENSE file that was distributed with this source code.
  */
 
-import type { ITokenProvider } from './types';
+import type { ITokenProvider } from './types.ts';
 
 type FetchFn = (url: string, init?: RequestInit) => Promise<Response>;
 
@@ -16,13 +16,15 @@ type OidcTokenProviderOptions = {
 };
 
 export class OidcTokenProvider implements ITokenProvider {
-    private requestUrl: string;
+    private readonly requestUrl: string;
 
-    private requestToken: string;
+    private readonly requestToken: string;
 
-    private fetchFn: FetchFn;
+    private readonly fetchFn: FetchFn;
 
-    private tokenCache: Map<string, string>;
+    private readonly tokenCache: Map<string, string>;
+
+    // ----------------------------------------------------
 
     constructor(options: OidcTokenProviderOptions) {
         this.requestUrl = options.requestUrl;
@@ -30,6 +32,8 @@ export class OidcTokenProvider implements ITokenProvider {
         this.fetchFn = options.fetchFn ?? globalThis.fetch;
         this.tokenCache = new Map();
     }
+
+    // ----------------------------------------------------
 
     async getToken(packageName: string, registry: string): Promise<string | undefined> {
         const cached = this.tokenCache.get(packageName);

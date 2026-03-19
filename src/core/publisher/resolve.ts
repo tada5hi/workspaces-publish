@@ -8,9 +8,9 @@
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import semver from 'semver';
-import { NpmCliPublisher } from './npm-cli';
-import { NpmPublisher } from './npm';
-import type { ExecFn, IPackagePublisher } from './types';
+import { NpmCliPublisher } from './npm-cli.ts';
+import { NpmPublisher } from './npm.ts';
+import type { ExecFn, IPackagePublisher } from './types.ts';
 
 const execFileAsync = promisify(execFile);
 

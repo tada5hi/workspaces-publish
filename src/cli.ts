@@ -12,10 +12,19 @@ import {
     ChainTokenProvider, ConsolaLogger, EnvTokenProvider,
     HapicRegistryClient, MemoryTokenProvider, NodeFileSystem,
     OidcTokenProvider, resolvePublisher,
-} from './core';
-import type { ITokenProvider } from './core';
-import { publish } from './module';
-import { isObject } from './utils';
+} from './core/index.ts';
+import type { ITokenProvider } from './core/index.ts';
+import { publish } from './module.ts';
+import { isObject } from './utils/index.ts';
+
+function isValidUrl(input: string): boolean {
+    try {
+        const parsed = new URL(input);
+        return !!parsed.protocol;
+    } catch {
+        return false;
+    }
+}
 
 function resolveTokenProvider(token?: string): ITokenProvider {
     if (token && token.length > 0) {
@@ -58,6 +67,11 @@ cli
         rootPackage?: boolean
     }) => {
         try {
+            if (!isValidUrl(options.registry)) {
+                logger.error(`Invalid registry URL: ${options.registry}`);
+                process.exit(2);
+            }
+
             const tokenProvider = resolveTokenProvider(options.token);
 
             if (options.token) {
@@ -81,8 +95,8 @@ cli
                 logger.info('No packages need to be published.');
             }
 
-            for (let i = 0; i < packages.length; i++) {
-                logger.success(`published ${packages[i].content.name}@${packages[i].content.version}`);
+            for (const package_ of packages) {
+                logger.success(`published ${package_.content.name}@${package_.content.version}`);
             }
 
             process.exit(0);

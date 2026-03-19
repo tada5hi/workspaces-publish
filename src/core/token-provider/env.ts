@@ -5,7 +5,7 @@
  * view the LICENSE file that was distributed with this source code.
  */
 
-import type { ITokenProvider } from './types';
+import type { ITokenProvider } from './types.ts';
 
 export class EnvTokenProvider implements ITokenProvider {
     async getToken(_packageName: string, _registry: string): Promise<string | undefined> {

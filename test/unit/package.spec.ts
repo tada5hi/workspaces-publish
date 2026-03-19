@@ -1,11 +1,13 @@
 import {
     describe, expect, it,
 } from 'vitest';
-import { MemoryPublisher, MemoryRegistryClient, NpmCliPublisher } from '../../src/core';
+import {
+    MemoryPublisher, MemoryRegistryClient, NpmCliPublisher, PublishError, RegistryError,
+} from '../../src/core/index.ts';
 import {
     isPackagePublishable, isPackagePublished, publishPackage,
-} from '../../src/package';
-import type { Package } from '../../src/core/package/types';
+} from '../../src/package.ts';
+import type { Package, IRegistryClient, Packument } from '../../src/core/index.ts';
 
 function createFakeFs() {
     const files: Record<string, string> = {};
@@ -104,6 +106,39 @@ describe('src/package', () => {
 
         it('should return false when package does not exist in registry', async () => {
             const registry = new MemoryRegistryClient();
+            const pkg: Package = {
+                path: '/project/packages/a',
+                content: { name: 'pkg-a', version: '1.0.0' },
+            };
+
+            const result = await isPackagePublished(pkg, registry, {
+                registry: 'https://registry.npmjs.org/',
+            });
+            expect(result).toBe(false);
+        });
+
+        it('should propagate transient registry errors (e.g. 500)', async () => {
+            const registry: IRegistryClient = {
+                async getPackument(): Promise<Packument> {
+                    throw new RegistryError('Internal Server Error', 500);
+                },
+            };
+            const pkg: Package = {
+                path: '/project/packages/a',
+                content: { name: 'pkg-a', version: '1.0.0' },
+            };
+
+            await expect(isPackagePublished(pkg, registry, {
+                registry: 'https://registry.npmjs.org/',
+            })).rejects.toThrow(RegistryError);
+        });
+
+        it('should return false on 404 registry error', async () => {
+            const registry: IRegistryClient = {
+                async getPackument(): Promise<Packument> {
+                    throw new RegistryError('Package not found', 404);
+                },
+            };
             const pkg: Package = {
                 path: '/project/packages/a',
                 content: { name: 'pkg-a', version: '1.0.0' },
@@ -248,7 +283,7 @@ describe('src/package', () => {
             expect(result).toBe(false);
         });
 
-        it('should throw on non-conflict npm CLI errors', async () => {
+        it('should throw PublishError on non-conflict npm CLI errors', async () => {
             const execFn = async () => {
                 throw new Error('npm ERR! 500 Internal Server Error');
             };
@@ -264,7 +299,7 @@ describe('src/package', () => {
             await expect(publishPackage(pkg, publisher, {
                 token: 'test-token',
                 registry: 'https://registry.npmjs.org/',
-            })).rejects.toThrow();
+            })).rejects.toThrow(PublishError);
         });
     });
 });

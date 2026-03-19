@@ -5,6 +5,6 @@
  * view the LICENSE file that was distributed with this source code.
  */
 
-export * from './consola';
-export * from './noop';
-export * from './types';
+export * from './consola.ts';
+export * from './noop.ts';
+export * from './types.ts';

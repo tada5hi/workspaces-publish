@@ -5,8 +5,9 @@
  * view the LICENSE file that was distributed with this source code.
  */
 
-export * from './memory';
-export * from './npm';
-export * from './npm-cli';
-export * from './resolve';
-export * from './types';
+export * from './error.ts';
+export * from './memory.ts';
+export * from './npm.ts';
+export * from './npm-cli.ts';
+export * from './resolve.ts';
+export * from './types.ts';

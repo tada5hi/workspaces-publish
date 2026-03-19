@@ -8,7 +8,7 @@
 | **SWC**        | TypeScript compilation (via @rollup/plugin-swc) |
 | **TypeScript** | Type checking (`tsc --emitDeclarationOnly`)  |
 | **Vitest**     | Test runner                                  |
-| **ESLint**     | Linting (`@tada5hi/eslint-config-typescript`) |
+| **ESLint**     | Linting (`@tada5hi/eslint-config` v2 flat config) |
 | **Husky**      | Git hooks                                    |
 | **commitlint** | Conventional commit message enforcement      |
 
@@ -20,16 +20,66 @@
 - **Charset**: UTF-8
 - **Final newline**: Always present
 
-ESLint extends `@tada5hi/eslint-config-typescript`. Key overrides:
+ESLint uses `@tada5hi/eslint-config` v2 (flat config in `eslint.config.js`). Key overrides:
 - `class-methods-use-this` — disabled
 - `no-shadow` — disabled
 - `no-use-before-define` — disabled
+- `@typescript-eslint/no-unused-vars` — allows `_` prefix for unused params
+
+### Class Structure
+
+Separate logical sections within a class with `// ----------------------------------------------------` comment lines. Sections are: fields, constructor, public methods, private/protected methods.
+
+```typescript
+export class MyClass {
+    private readonly name: string;
+
+    // ----------------------------------------------------
+
+    constructor(name: string) {
+        this.name = name;
+    }
+
+    // ----------------------------------------------------
+
+    doSomething(): void {
+        // ...
+    }
+
+    getStatus(): string {
+        // ... (same visibility group — no separator)
+    }
+
+    // ----------------------------------------------------
+
+    private helper(): void {
+        // ...
+    }
+
+    private anotherHelper(): void {
+        // ... (same private group — no separator)
+    }
+}
+```
+
+Rules:
+- Separator between fields → constructor → public methods → private methods
+- Do **not** separate every individual method — only between logical groups
+- The first line of a class body must **never** be a separator (if there are no fields, the constructor starts directly)
+- Classes with a single section (e.g. only public methods, no fields or constructor) need no separators
+
+### Error Handling
+
+- **No `instanceof Error`** — use duck-typing via `isError()` / `isObject()` from `src/utils/`. Node internals and cross-realm errors may not be `instanceof Error`.
+- **No generic `new Error()`** in adapters — use domain-specific error classes (`PublishError`, `RegistryError`) extending `BaseError`.
+- **Private members should be `readonly`** when only assigned in the constructor.
 
 ### ESLint Constraints to Watch
 
-- **No `for...of` loops** — use indexed `for` loops instead
+- **Prefer `for...of` loops** over indexed `for` loops (`unicorn/no-for-loop`)
 - **No shorthand constructor parameter properties** (`private x: string` in constructor params) — declare the field explicitly and assign in constructor body
 - **No useless constructors** — if a constructor only assigns parameter properties, declare the field and assign explicitly
+- **Use `_` prefix** for unused function parameters required by interfaces (e.g. `_packageName`)
 
 ## File Organization
 

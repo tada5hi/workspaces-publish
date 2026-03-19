@@ -5,14 +5,18 @@
  * view the LICENSE file that was distributed with this source code.
  */
 
-import type { ITokenProvider } from './types';
+import type { ITokenProvider } from './types.ts';
 
 export class MemoryTokenProvider implements ITokenProvider {
-    private token?: string;
+    private readonly token?: string;
+
+    // ----------------------------------------------------
 
     constructor(token?: string) {
         this.token = token;
     }
+
+    // ----------------------------------------------------
 
     async getToken(_packageName: string, _registry: string): Promise<string | undefined> {
         return this.token;

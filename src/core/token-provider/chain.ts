@@ -5,14 +5,18 @@
  * view the LICENSE file that was distributed with this source code.
  */
 
-import type { ITokenProvider } from './types';
+import type { ITokenProvider } from './types.ts';
 
 export class ChainTokenProvider implements ITokenProvider {
-    private providers: ITokenProvider[];
+    private readonly providers: ITokenProvider[];
+
+    // ----------------------------------------------------
 
     constructor(providers: ITokenProvider[]) {
         this.providers = providers;
     }
+
+    // ----------------------------------------------------
 
     async getToken(packageName: string, registry: string): Promise<string | undefined> {
         for (let i = 0; i < this.providers.length; i++) {

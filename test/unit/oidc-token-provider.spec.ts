@@ -1,7 +1,7 @@
 import {
     describe, expect, it,
 } from 'vitest';
-import { OidcTokenProvider } from '../../src/core';
+import { OidcTokenProvider } from '../../src/core/index.ts';
 
 function createFakeFetch(responses: Array<{ ok: boolean; status: number; body: any }>) {
     let callIndex = 0;

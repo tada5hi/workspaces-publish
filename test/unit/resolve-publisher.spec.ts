@@ -1,7 +1,7 @@
 import {
     describe, expect, it,
 } from 'vitest';
-import { NpmCliPublisher, NpmPublisher, resolvePublisher } from '../../src/core';
+import { NpmCliPublisher, NpmPublisher, resolvePublisher } from '../../src/core/index.ts';
 
 describe('src/core/publisher/resolve', () => {
     it('should return NpmCliPublisher when npm version is >= 10.0.0', async () => {

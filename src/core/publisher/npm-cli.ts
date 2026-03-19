@@ -9,8 +9,10 @@ import { execFile } from 'node:child_process';
 import { readFile, unlink, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { promisify } from 'node:util';
-import type { PackageJson } from '../package/types';
-import type { ExecFn, IPackagePublisher } from './types';
+import { isError, isObject } from '../../utils/index.ts';
+import type { PackageJson } from '../package/index.ts';
+import { PublishError } from './error.ts';
+import type { ExecFn, IPackagePublisher } from './types.ts';
 
 const execFileAsync = promisify(execFile);
 
@@ -18,12 +20,12 @@ const AUTH_TOKEN_PATTERN = /^(\/\/.+)\/:_authToken$/;
 
 function parseAuthTokenEntry(options: Record<string, any>): { key: string; token: string; registryPath: string } | undefined {
     const keys = Object.keys(options);
-    for (let i = 0; i < keys.length; i++) {
-        const match = AUTH_TOKEN_PATTERN.exec(keys[i]);
-        if (match && options[keys[i]]) {
+    for (const key of keys) {
+        const match = AUTH_TOKEN_PATTERN.exec(key);
+        if (match && options[key]) {
             return {
-                key: keys[i],
-                token: options[keys[i]],
+                key,
+                token: options[key],
                 registryPath: match[1],
             };
         }
@@ -44,13 +46,15 @@ type NpmCliPublisherOptions = {
 };
 
 export class NpmCliPublisher implements IPackagePublisher {
-    private execFn: ExecFn;
+    private readonly execFn: ExecFn;
 
-    private readFileFn: ReadFileFn;
+    private readonly readFileFn: ReadFileFn;
 
-    private writeFileFn: WriteFileFn;
+    private readonly writeFileFn: WriteFileFn;
 
-    private unlinkFn: UnlinkFn;
+    private readonly unlinkFn: UnlinkFn;
+
+    // ----------------------------------------------------
 
     constructor(options: NpmCliPublisherOptions = {}) {
         this.execFn = options.execFn || execFileAsync;
@@ -59,11 +63,22 @@ export class NpmCliPublisher implements IPackagePublisher {
         this.unlinkFn = options.unlinkFn || ((fp) => unlink(fp));
     }
 
+    // ----------------------------------------------------
+
+    /**
+     * Publish a package by shelling out to `npm publish`.
+     *
+     * Writes a temporary `.npmrc` for auth when a token is present and
+     * restores/removes it after the command completes (even on failure).
+     *
+     * @returns `true` if published, `false` if the version already exists.
+     * @throws {PublishError} On non-conflict failures (network errors, auth failures, etc.).
+     */
     async publish(
         packagePath: string,
         _manifest: PackageJson,
         options: Record<string, any>,
-    ): Promise<void> {
+    ): Promise<boolean> {
         const args = ['publish'];
 
         const authEntry = parseAuthTokenEntry(options);
@@ -114,8 +129,15 @@ export class NpmCliPublisher implements IPackagePublisher {
                 cwd: packagePath,
                 env,
             });
+            return true;
         } catch (e: unknown) {
-            throw this.normalizeError(e);
+            if (this.isVersionConflict(e)) {
+                return false;
+            }
+
+            const cause = isError(e) ? e : undefined;
+            const message = cause?.message || 'npm publish failed with an unknown error';
+            throw new PublishError(message, { cause });
         } finally {
             if (npmrcPath) {
                 if (typeof existingNpmrc === 'string') {
@@ -131,43 +153,23 @@ export class NpmCliPublisher implements IPackagePublisher {
         }
     }
 
-    private normalizeError(e: unknown): Error {
-        if (!e || typeof e !== 'object') {
-            return new Error('Unknown npm publish error');
-        }
+    // ----------------------------------------------------
 
-        const rec = e as Record<string, unknown>;
+    private isVersionConflict(e: unknown): boolean {
+        if (!isObject(e)) {
+            return false;
+        }
 
         let stderr = '';
-        if ('stderr' in e && typeof rec.stderr === 'string') {
-            stderr = rec.stderr;
+        if (typeof e.stderr === 'string') {
+            stderr = e.stderr;
         }
-
-        let message = '';
-        if ('message' in e && typeof rec.message === 'string') {
-            message = rec.message;
-        }
-
+        const message = isError(e) ? e.message : '';
         const combined = `${stderr} ${message}`;
 
-        if (combined.includes('EPUBLISHCONFLICT') ||
-            combined.includes('You cannot publish over the previously published versions')) {
-            const err = new Error(combined.trim());
-            (err as unknown as Record<string, unknown>).code = 'EPUBLISHCONFLICT';
-            return err;
-        }
-
-        if (combined.includes('Cannot publish over existing version') ||
-            combined.includes('409 Conflict')) {
-            const err = new Error(combined.trim());
-            (err as unknown as Record<string, unknown>).code = 'E409';
-            return err;
-        }
-
-        if (e instanceof Error) {
-            return e;
-        }
-
-        return new Error(message || 'Unknown npm publish error');
+        return combined.includes('EPUBLISHCONFLICT') ||
+            combined.includes('You cannot publish over the previously published versions') ||
+            combined.includes('Cannot publish over existing version') ||
+            combined.includes('409 Conflict');
     }
 }

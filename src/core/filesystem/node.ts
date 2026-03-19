@@ -7,7 +7,7 @@
 
 import fs from 'node:fs';
 import fg from 'fast-glob';
-import type { IFileSystem } from './types';
+import type { IFileSystem } from './types.ts';
 
 export class NodeFileSystem implements IFileSystem {
     async readFile(filePath: string): Promise<string> {

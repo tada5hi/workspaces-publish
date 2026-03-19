@@ -9,15 +9,16 @@ import path from 'node:path';
 import {
     EnvTokenProvider, HapicRegistryClient,
     MemoryTokenProvider, NodeFileSystem, resolvePublisher,
-} from './core';
-import type { IFileSystem, ITokenProvider } from './core';
-import type { Package, PackageJson } from './core/package/types';
-import { REGISTRY_URL } from './constants';
+} from './core/index.ts';
+import type {
+    IFileSystem, ITokenProvider, Package, PackageJson,
+} from './core/index.ts';
+import { REGISTRY_URL } from './constants.ts';
 import {
     isPackagePublishable, isPackagePublished, publishPackage,
-} from './package';
-import { updatePackagesDependencies } from './package-dependency';
-import type { PublishOptions } from './types';
+} from './package.ts';
+import { updatePackagesDependencies } from './package-dependency.ts';
+import type { PublishOptions } from './types.ts';
 
 function resolveTokenProvider(options: PublishOptions): ITokenProvider {
     if (options.tokenProvider) {
@@ -43,18 +44,18 @@ async function readWorkspacePackages(
 
     const pkgs: Package[] = [];
 
-    for (let i = 0; i < directories.length; i++) {
+    for (const directory of directories) {
         try {
             const raw = await fileSystem.readFile(
-                path.posix.join(directories[i], 'package.json'),
+                path.posix.join(directory, 'package.json'),
             );
             const content: PackageJson = JSON.parse(raw);
 
             pkgs.push({
-                path: directories[i],
+                path: directory,
                 content,
             });
-        } catch (e) {
+        } catch {
             // leave this unhandled.
         }
     }
@@ -73,7 +74,12 @@ export async function publish(options: PublishOptions = {}): Promise<Package[]> 
     const tokenProvider = resolveTokenProvider(options);
 
     const raw = await fileSystem.readFile(path.posix.join(cwd, 'package.json'));
-    const pkg: PackageJson = JSON.parse(raw);
+    let pkg: PackageJson;
+    try {
+        pkg = JSON.parse(raw);
+    } catch {
+        throw new Error(`Invalid JSON in package.json at ${path.posix.join(cwd, 'package.json')}`);
+    }
 
     const packages: Package[] = [];
 
@@ -98,8 +104,7 @@ export async function publish(options: PublishOptions = {}): Promise<Package[]> 
     updatePackagesDependencies(packages);
 
     const unpublishedPackages: Array<{ pkg: Package; token?: string }> = [];
-    for (let i = 0; i < packages.length; i++) {
-        const p = packages[i];
+    for (const p of packages) {
 
         if (!isPackagePublishable(p)) {
             continue;
@@ -125,8 +130,7 @@ export async function publish(options: PublishOptions = {}): Promise<Package[]> 
         return [];
     }
 
-    for (let i = 0; i < unpublishedPackages.length; i++) {
-        const { pkg: p, token } = unpublishedPackages[i];
+    for (const { pkg: p, token } of unpublishedPackages) {
         p.published = await publishPackage(p, publisher, { token, registry });
     }
 
