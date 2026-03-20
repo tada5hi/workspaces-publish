@@ -16,6 +16,7 @@ Otherwise it falls back to [libnpmpublish](https://www.npmjs.com/package/libnpmp
 - [Installation](#installation)
 - [Usage](#usage)
 - [Authentication](#authentication)
+- [GitHub Action](#github-action)
 - [Programmatic API](#programmatic-api)
 - [CI](#ci)
 
@@ -73,6 +74,31 @@ When running in GitHub Actions with [trusted publishers](https://docs.npmjs.com/
 4. Uses that token for publishing (each package gets its own scoped token)
 
 If OIDC token exchange fails for a package, it falls back to `NODE_AUTH_TOKEN` automatically via the chain provider.
+
+## GitHub Action
+
+monopub is also available as a GitHub Action:
+
+```yaml
+-   uses: tada5hi/monopub@v2
+    with:
+        token: ${{ secrets.NPM_TOKEN }}
+```
+
+Or with OIDC trusted publishing (no token needed):
+
+```yaml
+-   uses: tada5hi/monopub@v2
+```
+
+### Action Inputs
+
+| Input | Required | Default | Description |
+|-------|----------|---------|-------------|
+| `token` | No | — | npm auth token. Optional when using OIDC trusted publishing. |
+| `registry` | No | `https://registry.npmjs.org/` | Registry URL to publish to. |
+| `root-package` | No | `true` | Also consider the root package for publishing. |
+| `dry-run` | No | `false` | Show what would be published without actually publishing. |
 
 ## Programmatic API
 
@@ -143,7 +169,7 @@ Available port interfaces and their adapters:
 
 ### GitHub Actions (with npm token)
 
-Use with [release-please](https://github.com/googleapis/release-please) — it bumps versions and creates release PRs, then `monopub` handles the actual publishing:
+Use with [release-please](https://github.com/googleapis/release-please) — it bumps versions and creates release PRs, then monopub handles the actual publishing:
 
 ```yaml
 on:
@@ -168,21 +194,11 @@ jobs:
                 if: steps.release.outputs.releases_created == 'true'
                 uses: actions/checkout@v4
 
-            -   name: Install Node.js
-                if: steps.release.outputs.releases_created == 'true'
-                uses: actions/setup-node@v4
-                with:
-                    node-version: 22
-
-            -   name: Install dependencies
-                if: steps.release.outputs.releases_created == 'true'
-                run: npm ci
-
             -   name: Publish
                 if: steps.release.outputs.releases_created == 'true'
-                run: npx monopub
-                env:
-                    NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+                uses: tada5hi/monopub@v2
+                with:
+                    token: ${{ secrets.NPM_TOKEN }}
 ```
 
 ### GitHub Actions (with OIDC Trusted Publishing)
@@ -213,19 +229,9 @@ jobs:
                 if: steps.release.outputs.releases_created == 'true'
                 uses: actions/checkout@v4
 
-            -   name: Install Node.js
-                if: steps.release.outputs.releases_created == 'true'
-                uses: actions/setup-node@v4
-                with:
-                    node-version: 22
-
-            -   name: Install dependencies
-                if: steps.release.outputs.releases_created == 'true'
-                run: npm ci
-
             -   name: Publish
                 if: steps.release.outputs.releases_created == 'true'
-                run: npx monopub
+                uses: tada5hi/monopub@v2
 ```
 
 ## License

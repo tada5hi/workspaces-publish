@@ -1,0 +1,24 @@
+name: 'monopub'
+description: 'Publish npm workspace packages to registries. Supports OIDC trusted publishing.'
+inputs:
+    token:
+        description: 'npm auth token. Optional when using OIDC trusted publishing.'
+        required: false
+    registry:
+        description: 'Registry URL to publish to.'
+        required: false
+        default: 'https://registry.npmjs.org/'
+    root-package:
+        description: 'Also consider the root package for publishing.'
+        required: false
+        default: 'true'
+    dry-run:
+        description: 'Show what would be published without actually publishing.'
+        required: false
+        default: 'false'
+
+runs:
+    using: 'docker'
+    image: 'Dockerfile'
+    env:
+        NODE_AUTH_TOKEN: ${{ inputs.token }}
