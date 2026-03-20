@@ -1,7 +1,7 @@
-# workspaces-publish
+# monopub 📦
 
-[![npm version](https://badge.fury.io/js/workspaces-publish.svg)](https://badge.fury.io/js/workspaces-publish)
-[![CI](https://github.com/Tada5hi/workspaces-publish/workflows/CI/badge.svg)](https://github.com/Tada5hi/workspaces-publish)
+[![npm version](https://badge.fury.io/js/monopub.svg)](https://badge.fury.io/js/monopub)
+[![CI](https://github.com/Tada5hi/monopub/workflows/CI/badge.svg)](https://github.com/Tada5hi/monopub)
 [![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-%23FE5196?logo=conventionalcommits&logoColor=white)](https://conventionalcommits.org)
 
 A CLI tool and library for publishing packages from npm workspaces to registries (npmjs.org, GitHub Packages, etc.).
@@ -27,13 +27,13 @@ Otherwise it falls back to [libnpmpublish](https://www.npmjs.com/package/libnpmp
 ## Installation
 
 ```bash
-npm install workspaces-publish --save-dev
+npm install monopub --save-dev
 ```
 
 ## Usage
 
 ```bash
-npx workspaces-publish \
+npx monopub \
   --token <token> \
   --registry <registry> \
   --root <root> \
@@ -77,7 +77,7 @@ If OIDC token exchange fails for a package, it falls back to `NODE_AUTH_TOKEN` a
 ## Programmatic API
 
 ```typescript
-import { publish } from 'workspaces-publish';
+import { publish } from 'monopub';
 
 const packages = await publish({
     cwd: '/path/to/monorepo',
@@ -117,7 +117,7 @@ import {
     MemoryPublisher,
     MemoryTokenProvider,
     NoopLogger,
-} from 'workspaces-publish';
+} from 'monopub';
 
 const packages = await publish({
     cwd: '/project',
@@ -143,7 +143,7 @@ Available port interfaces and their adapters:
 
 ### GitHub Actions (with npm token)
 
-Use with [release-please](https://github.com/googleapis/release-please) — it bumps versions and creates release PRs, then `workspaces-publish` handles the actual publishing:
+Use with [release-please](https://github.com/googleapis/release-please) — it bumps versions and creates release PRs, then `monopub` handles the actual publishing:
 
 ```yaml
 on:
@@ -180,7 +180,7 @@ jobs:
 
             -   name: Publish
                 if: steps.release.outputs.releases_created == 'true'
-                run: npx workspaces-publish
+                run: npx monopub
                 env:
                     NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 ```
@@ -225,7 +225,7 @@ jobs:
 
             -   name: Publish
                 if: steps.release.outputs.releases_created == 'true'
-                run: npx workspaces-publish
+                run: npx monopub
 ```
 
 ## License

@@ -1,15 +1,15 @@
 <!-- NOTE: Keep this file and all corresponding files in the .agents directory updated as the project evolves. When making architectural changes, adding new patterns, or discovering important conventions, update the relevant sections. -->
 
-# Workspaces Publish — Agent Guide
+# monopub — Agent Guide
 
 ## Project Overview
 
-**workspaces-publish** is a Node.js CLI tool and library that publishes packages from npm workspaces to registries (npmjs.org, GitHub Packages, etc.). It determines which workspace packages haven't been published yet by querying registry metadata, resolves `workspace:` protocol dependencies to real versions, and publishes only what's needed — making it ideal for CI/CD pipelines alongside release-please.
+**monopub** is a Node.js CLI tool and library that publishes packages from npm workspaces to registries (npmjs.org, GitHub Packages, etc.). It determines which workspace packages haven't been published yet by querying registry metadata, resolves `workspace:` protocol dependencies to real versions, and publishes only what's needed — making it ideal for CI/CD pipelines alongside release-please.
 
 The project uses a **hexagonal architecture** (ports & adapters) — all external I/O is behind port interfaces with memory/fake adapters for testing. Authentication supports static tokens, environment variables, and OIDC trusted publishing.
 
-- **Repository**: https://github.com/tada5hi/workspaces-publish
-- **Package**: `@tada5hi/workspaces-publish`
+- **Repository**: https://github.com/tada5hi/monopub
+- **Package**: `monopub`
 - **License**: MIT
 
 ## Quick Reference
@@ -40,7 +40,7 @@ npm ci
 ### CLI Usage
 
 ```bash
-workspaces-publish [--token <npm-token>] [--registry <url>] [--root <path>] [--rootPackage]
+monopub [--token <npm-token>] [--registry <url>] [--root <path>] [--rootPackage]
 ```
 
 The CLI entry point is `src/cli.ts`, built to `dist/cli.mjs`. The token is optional — it defaults to `NODE_AUTH_TOKEN` env var, or OIDC trusted publishing when running in GitHub Actions.
@@ -59,6 +59,3 @@ The CLI entry point is `src/cli.ts`, built to `dist/cli.mjs`. The token is optio
 - **[Testing](.agents/testing.md)** — Memory adapters, test conventions, no vi.mock
 - **[Conventions](.agents/conventions.md)** — Code style, ESLint constraints, hexagonal rules
 
-## Follow-Up Plans
-
-- **[npm CLI Publisher](.agents/plans/npm-cli-publisher.md)** — Plan to prefer `npm publish` CLI with libnpmpublish fallback

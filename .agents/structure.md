@@ -1,11 +1,11 @@
 # Project Structure
 
-workspaces-publish is a single-package repository (not a monorepo itself), but it is a tool designed to publish monorepo workspaces.
+monopub is a single-package repository (not a monorepo itself), but it is a tool designed to publish monorepo workspaces.
 
 ## Directory Layout
 
 ```text
-workspaces-publish/
+monopub/
 ├── src/                                # TypeScript source
 │   ├── cli.ts                          # CLI entry point & composition root
 │   ├── index.ts                        # Library entry point (public API exports)
