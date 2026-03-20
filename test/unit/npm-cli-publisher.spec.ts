@@ -130,13 +130,14 @@ describe('src/core/publisher/npm-cli', () => {
         );
 
         // .npmrc should be cleaned up after publish
-        expect(fs.unlinked).toContain(path.join('/project/packages/a', '.npmrc'));
+        expect(fs.unlinked).toContain(path.sep + path.join('project', 'packages', 'a', '.npmrc'));
     });
 
     it('should preserve existing .npmrc content during publish', async () => {
         const { calls } = createFakeExec();
         const fs = createFakeFs();
-        fs.files[path.join('/project/packages/a', '.npmrc')] = 'legacy-peer-deps=true\n';
+        const npmrcPath = path.sep + path.join('project', 'packages', 'a', '.npmrc');
+        fs.files[npmrcPath] = 'legacy-peer-deps=true\n';
 
         let contentDuringPublish = '';
         const capturingExecFn = async (
@@ -144,7 +145,7 @@ describe('src/core/publisher/npm-cli', () => {
             args: string[],
             options: { cwd: string; env: Record<string, string | undefined> },
         ) => {
-            contentDuringPublish = fs.files[path.join('/project/packages/a', '.npmrc')] || '';
+            contentDuringPublish = fs.files[npmrcPath] || '';
             calls.push({ command, args, options });
             return { stdout: '', stderr: '' };
         };
@@ -166,7 +167,8 @@ describe('src/core/publisher/npm-cli', () => {
     it('should restore existing .npmrc after publish', async () => {
         const { execFn } = createFakeExec();
         const fs = createFakeFs();
-        fs.files['/project/packages/a/.npmrc'] = 'existing-content';
+        const npmrcPath = path.sep + path.join('project', 'packages', 'a', '.npmrc');
+        fs.files[npmrcPath] = 'existing-content';
         const publisher = new NpmCliPublisher({
             execFn, readFileFn: fs.readFileFn, writeFileFn: fs.writeFileFn, unlinkFn: fs.unlinkFn,
         });
@@ -177,7 +179,7 @@ describe('src/core/publisher/npm-cli', () => {
             { '//registry.npmjs.org/:_authToken': 'my-token' },
         );
 
-        expect(fs.files['/project/packages/a/.npmrc']).toEqual('existing-content');
+        expect(fs.files[npmrcPath]).toEqual('existing-content');
     });
 
     it('should write correct .npmrc content for custom registry', async () => {
@@ -322,7 +324,31 @@ describe('src/core/publisher/npm-cli', () => {
             // expected
         }
 
-        expect(fs.unlinked).toContain(path.join('/project/packages/a', '.npmrc'));
+        expect(fs.unlinked).toContain(path.sep + path.join('project', 'packages', 'a', '.npmrc'));
+    });
+
+    it('should restore .npmrc after exec error with existing .npmrc', async () => {
+        const execFn = async () => {
+            throw new Error('npm publish failed');
+        };
+        const fs = createFakeFs();
+        const npmrcPath = path.sep + path.join('project', 'packages', 'a', '.npmrc');
+        fs.files[npmrcPath] = 'original-content';
+        const publisher = new NpmCliPublisher({
+            execFn, readFileFn: fs.readFileFn, writeFileFn: fs.writeFileFn, unlinkFn: fs.unlinkFn,
+        });
+
+        try {
+            await publisher.publish(
+                '/project/packages/a',
+                { name: 'pkg-a', version: '1.0.0' },
+                { '//registry.npmjs.org/:_authToken': 'my-token' },
+            );
+        } catch {
+            // expected
+        }
+
+        expect(fs.files[npmrcPath]).toEqual('original-content');
     });
 
     it('should return false on npmjs EPUBLISHCONFLICT from stderr', async () => {

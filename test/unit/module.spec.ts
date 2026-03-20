@@ -37,7 +37,6 @@ function createTestFileSystem() {
 function createTestOptions(overrides: Record<string, any> = {}) {
     return {
         cwd: '/project',
-        dryRun: true,
         fileSystem: createTestFileSystem(),
         registryClient: new MemoryRegistryClient(),
         publisher: new MemoryPublisher(),
@@ -132,6 +131,15 @@ describe('src/module', () => {
         expect(pkgA.dependencies['pkg-b']).toEqual('workspace:^');
     });
 
+    it('should not call publisher in dryRun mode', async () => {
+        const publisher = new MemoryPublisher();
+
+        const packages = await publish(createTestOptions({ publisher, dryRun: true }));
+
+        expect(packages.length).toEqual(3);
+        expect(publisher.published.length).toEqual(0);
+    });
+
     it('should write modified package.json when not in dryRun mode', async () => {
         const fs = createTestFileSystem();
 
@@ -172,7 +180,6 @@ describe('src/module', () => {
 
         const packages = await publish({
             cwd: '/project',
-            dryRun: true,
             fileSystem: fs,
             registryClient: new MemoryRegistryClient(),
             publisher,
@@ -237,6 +244,46 @@ describe('src/module', () => {
         expect(names).not.toContain('pkg-a');
         expect(names).toContain('pkg-b');
         expect(logger.warnings.some((w) => w.includes('pkg-a') && w.includes('unresolved'))).toBe(true);
+    });
+
+    it('should handle empty workspaces array', async () => {
+        const fs = new MemoryFileSystem({
+            '/project/package.json': JSON.stringify({
+                name: 'root',
+                version: '1.0.0',
+                workspaces: [],
+            }),
+        });
+
+        const packages = await publish(createTestOptions({
+            fileSystem: fs,
+            rootPackage: false,
+        }));
+
+        expect(packages.length).toEqual(0);
+    });
+
+    it('should skip invalid workspace package.json and process valid ones', async () => {
+        const fs = new MemoryFileSystem({
+            '/project/package.json': JSON.stringify({
+                name: 'root',
+                version: '1.0.0',
+                workspaces: ['packages/*'],
+            }),
+            '/project/packages/pkgA/package.json': '{ broken json',
+            '/project/packages/pkgB/package.json': JSON.stringify({
+                name: 'pkg-b',
+                version: '1.0.0',
+            }),
+        });
+
+        const packages = await publish(createTestOptions({
+            fileSystem: fs,
+            rootPackage: false,
+        }));
+
+        expect(packages.length).toEqual(1);
+        expect(packages[0].content.name).toEqual('pkg-b');
     });
 
     it('should skip package when writeFile fails during dependency rewrite', async () => {

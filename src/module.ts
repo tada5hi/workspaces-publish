@@ -143,6 +143,10 @@ export async function publish(options: PublishOptions = {}): Promise<Package[]> 
         return [];
     }
 
+    if (options.dryRun) {
+        return unpublishedPackages.map((item) => item.pkg);
+    }
+
     for (const { pkg: p, token } of unpublishedPackages) {
         p.published = await publishPackage(p, publisher, { token, registry });
     }
