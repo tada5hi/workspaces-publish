@@ -1,5 +1,5 @@
 {
-    "name": "wspublish",
+    "name": "monoship",
     "type": "module",
     "version": "1.8.1",
     "description": "A CLI tool and library for publishing packages from npm workspaces to registries.",
@@ -10,7 +10,7 @@
     },
     "repository": {
         "type": "git",
-        "url": "https://github.com/tada5hi/wspublish.git"
+        "url": "https://github.com/tada5hi/monoship.git"
     },
     "module": "./dist/index.mjs",
     "exports": {
@@ -50,7 +50,7 @@
         "release"
     ],
     "bin": {
-        "wspublish": "dist/cli.mjs"
+        "monoship": "dist/cli.mjs"
     },
     "license": "MIT",
     "dependencies": {

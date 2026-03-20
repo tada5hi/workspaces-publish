@@ -1,15 +1,15 @@
 <!-- NOTE: Keep this file and all corresponding files in the .agents directory updated as the project evolves. When making architectural changes, adding new patterns, or discovering important conventions, update the relevant sections. -->
 
-# wspublish — Agent Guide
+# monoship — Agent Guide
 
 ## Project Overview
 
-**wspublish** is a Node.js CLI tool and library that publishes packages from npm workspaces to registries (npmjs.org, GitHub Packages, etc.). It determines which workspace packages haven't been published yet by querying registry metadata, resolves `workspace:` protocol dependencies to real versions, and publishes only what's needed — making it ideal for CI/CD pipelines alongside release-please.
+**monoship** is a Node.js CLI tool and library that publishes packages from npm workspaces to registries (npmjs.org, GitHub Packages, etc.). It determines which workspace packages haven't been published yet by querying registry metadata, resolves `workspace:` protocol dependencies to real versions, and publishes only what's needed — making it ideal for CI/CD pipelines alongside release-please.
 
 The project uses a **hexagonal architecture** (ports & adapters) — all external I/O is behind port interfaces with memory/fake adapters for testing. Authentication supports static tokens, environment variables, and OIDC trusted publishing.
 
-- **Repository**: https://github.com/tada5hi/wspublish
-- **Package**: `wspublish`
+- **Repository**: https://github.com/tada5hi/monoship
+- **Package**: `monoship`
 - **License**: MIT
 
 ## Quick Reference
@@ -40,7 +40,7 @@ npm ci
 ### CLI Usage
 
 ```bash
-wspublish [--token <npm-token>] [--registry <url>] [--root <path>] [--rootPackage]
+monoship [--token <npm-token>] [--registry <url>] [--root <path>] [--rootPackage]
 ```
 
 The CLI entry point is `src/cli.ts`, built to `dist/cli.mjs`. The token is optional — it defaults to `NODE_AUTH_TOKEN` env var, or OIDC trusted publishing when running in GitHub Actions.

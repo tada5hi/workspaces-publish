@@ -1,4 +1,4 @@
-name: 'wspublish'
+name: 'monoship'
 description: 'Publish npm workspace packages to registries. Supports OIDC trusted publishing.'
 inputs:
     token:

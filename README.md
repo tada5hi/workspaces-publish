@@ -1,7 +1,7 @@
-# wspublish 📦
+# monoship 📦
 
-[![npm version](https://badge.fury.io/js/wspublish.svg)](https://badge.fury.io/js/wspublish)
-[![CI](https://github.com/Tada5hi/wspublish/workflows/CI/badge.svg)](https://github.com/Tada5hi/wspublish)
+[![npm version](https://badge.fury.io/js/monoship.svg)](https://badge.fury.io/js/monoship)
+[![CI](https://github.com/Tada5hi/monoship/workflows/CI/badge.svg)](https://github.com/Tada5hi/monoship)
 [![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-%23FE5196?logo=conventionalcommits&logoColor=white)](https://conventionalcommits.org)
 
 A CLI tool and library for publishing packages from npm workspaces to registries (npmjs.org, GitHub Packages, etc.).
@@ -28,13 +28,13 @@ Otherwise it falls back to [libnpmpublish](https://www.npmjs.com/package/libnpmp
 ## Installation
 
 ```bash
-npm install wspublish --save-dev
+npm install monoship --save-dev
 ```
 
 ## Usage
 
 ```bash
-npx wspublish \
+npx monoship \
   --token <token> \
   --registry <registry> \
   --root <root> \
@@ -77,10 +77,10 @@ If OIDC token exchange fails for a package, it falls back to `NODE_AUTH_TOKEN` a
 
 ## GitHub Action
 
-wspublish is also available as a GitHub Action:
+monoship is also available as a GitHub Action:
 
 ```yaml
--   uses: tada5hi/wspublish@v2
+-   uses: tada5hi/monoship@v2
     with:
         token: ${{ secrets.NPM_TOKEN }}
 ```
@@ -88,7 +88,7 @@ wspublish is also available as a GitHub Action:
 Or with OIDC trusted publishing (no token needed):
 
 ```yaml
--   uses: tada5hi/wspublish@v2
+-   uses: tada5hi/monoship@v2
 ```
 
 ### Action Inputs
@@ -103,7 +103,7 @@ Or with OIDC trusted publishing (no token needed):
 ## Programmatic API
 
 ```typescript
-import { publish } from 'wspublish';
+import { publish } from 'monoship';
 
 const packages = await publish({
     cwd: '/path/to/monorepo',
@@ -143,7 +143,7 @@ import {
     MemoryPublisher,
     MemoryTokenProvider,
     NoopLogger,
-} from 'wspublish';
+} from 'monoship';
 
 const packages = await publish({
     cwd: '/project',
@@ -169,7 +169,7 @@ Available port interfaces and their adapters:
 
 ### GitHub Actions (with npm token)
 
-Use with [release-please](https://github.com/googleapis/release-please) — it bumps versions and creates release PRs, then wspublish handles the actual publishing:
+Use with [release-please](https://github.com/googleapis/release-please) — it bumps versions and creates release PRs, then monoship handles the actual publishing:
 
 ```yaml
 on:
@@ -196,7 +196,7 @@ jobs:
 
             -   name: Publish
                 if: steps.release.outputs.releases_created == 'true'
-                uses: tada5hi/wspublish@v2
+                uses: tada5hi/monoship@v2
                 with:
                     token: ${{ secrets.NPM_TOKEN }}
 ```
@@ -231,7 +231,7 @@ jobs:
 
             -   name: Publish
                 if: steps.release.outputs.releases_created == 'true'
-                uses: tada5hi/wspublish@v2
+                uses: tada5hi/monoship@v2
 ```
 
 ## License
