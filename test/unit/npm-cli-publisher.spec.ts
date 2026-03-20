@@ -325,6 +325,29 @@ describe('src/core/publisher/npm-cli', () => {
         expect(fs.unlinked).toContain(path.join('/project/packages/a', '.npmrc'));
     });
 
+    it('should restore .npmrc after exec error with existing .npmrc', async () => {
+        const execFn = async () => {
+            throw new Error('npm publish failed');
+        };
+        const fs = createFakeFs();
+        fs.files['/project/packages/a/.npmrc'] = 'original-content';
+        const publisher = new NpmCliPublisher({
+            execFn, readFileFn: fs.readFileFn, writeFileFn: fs.writeFileFn, unlinkFn: fs.unlinkFn,
+        });
+
+        try {
+            await publisher.publish(
+                '/project/packages/a',
+                { name: 'pkg-a', version: '1.0.0' },
+                { '//registry.npmjs.org/:_authToken': 'my-token' },
+            );
+        } catch {
+            // expected
+        }
+
+        expect(fs.files['/project/packages/a/.npmrc']).toEqual('original-content');
+    });
+
     it('should return false on npmjs EPUBLISHCONFLICT from stderr', async () => {
         const execFn = async () => {
             const err: Record<string, unknown> = new Error('Command failed');

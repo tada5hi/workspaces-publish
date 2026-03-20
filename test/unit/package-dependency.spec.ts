@@ -144,6 +144,24 @@ describe('src/package-dependency', () => {
         expect(packages[0].modified).toBeUndefined();
     });
 
+    it('should handle empty dependency object', () => {
+        const packages: Package[] = [
+            {
+                path: '/project/packages/a',
+                content: {
+                    name: 'pkg-a',
+                    version: '1.0.0',
+                    dependencies: {},
+                },
+            },
+        ];
+
+        updatePackagesDependencies(packages);
+
+        expect(packages[0].modified).toBeUndefined();
+        expect(packages[0].valid).toBeUndefined();
+    });
+
     it('should mark package as invalid when workspace dep targets non-existent package', () => {
         const packages: Package[] = [
             {

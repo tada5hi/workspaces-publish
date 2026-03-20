@@ -15,7 +15,7 @@ import {
 } from './core/index.ts';
 import type { ITokenProvider } from './core/index.ts';
 import { publish } from './module.ts';
-import { isObject } from './utils/index.ts';
+import { isError } from './utils/index.ts';
 
 function isValidUrl(input: string): boolean {
     try {
@@ -60,11 +60,13 @@ cli
         default: process.cwd(),
     })
     .option('--rootPackage', 'Also consider the root package for publishing')
+    .option('--dryRun', 'Show what would be published without actually publishing')
     .action(async (options: {
         token: string,
         registry: string,
         root: string,
-        rootPackage?: boolean
+        rootPackage?: boolean,
+        dryRun?: boolean
     }) => {
         try {
             if (!isValidUrl(options.registry)) {
@@ -84,6 +86,7 @@ cli
                 registry: options.registry,
                 cwd: options.root,
                 rootPackage: options.rootPackage ?? true,
+                dryRun: options.dryRun,
                 fileSystem: new NodeFileSystem(),
                 registryClient: new HapicRegistryClient(),
                 publisher,
@@ -93,16 +96,27 @@ cli
 
             if (packages.length === 0) {
                 logger.info('No packages need to be published.');
-            }
-
-            for (const package_ of packages) {
-                logger.success(`published ${package_.content.name}@${package_.content.version}`);
+            } else if (options.dryRun) {
+                logger.info('Dry run — the following packages would be published:');
+                for (const pkg of packages) {
+                    logger.info(`  ${pkg.content.name}@${pkg.content.version} → ${options.registry}`);
+                }
+            } else {
+                for (const pkg of packages) {
+                    logger.success(`Published ${pkg.content.name}@${pkg.content.version}`);
+                }
+                logger.info(`Published ${packages.length} package(s).`);
             }
 
             process.exit(0);
         } catch (e) {
-            if (isObject(e)) {
-                logger.warn(e?.message || 'An unknown error occurred.');
+            if (isError(e)) {
+                logger.error(e.message);
+                if (process.env.DEBUG) {
+                    logger.error(e.stack || '');
+                }
+            } else {
+                logger.error('An unknown error occurred.');
             }
             process.exit(1);
         }
