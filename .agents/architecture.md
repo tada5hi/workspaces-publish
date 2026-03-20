@@ -2,7 +2,7 @@
 
 ## Overview
 
-monopub uses a **hexagonal architecture** (ports & adapters) pattern. All external I/O (filesystem, HTTP, npm publish, authentication) is abstracted behind port interfaces defined in `src/core/<domain>/types.ts`. Real adapters implement these for production; memory/fake adapters implement them for testing.
+wspublish uses a **hexagonal architecture** (ports & adapters) pattern. All external I/O (filesystem, HTTP, npm publish, authentication) is abstracted behind port interfaces defined in `src/core/<domain>/types.ts`. Real adapters implement these for production; memory/fake adapters implement them for testing.
 
 The CLI (`cli.ts`) serves as the **composition root**, wiring real adapters and injecting them into the orchestrator.
 

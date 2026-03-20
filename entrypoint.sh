@@ -14,3 +14,4 @@ if [ "$INPUT_DRY_RUN" = "true" ]; then
 fi
 
 node /app/dist/cli.mjs $args
+
