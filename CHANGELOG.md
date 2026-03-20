@@ -9,6 +9,32 @@
 * **deps:** bump libnpmpublish from 9.0.8 to 9.0.9 ([#131](https://github.com/tada5hi/workspaces-publish/issues/131)) ([10c2d17](https://github.com/tada5hi/workspaces-publish/commit/10c2d177b48f85538768fadfbf5499492e14a7b0))
 * **deps:** bump the minorandpatch group with 14 updates ([#297](https://github.com/tada5hi/workspaces-publish/issues/297)) ([3be75b1](https://github.com/tada5hi/workspaces-publish/commit/3be75b19e990a929dd61f51b3734e549f01c6f47))
 
+## [2.0.0](https://github.com/tada5hi/monoship/compare/v1.8.1...v2.0.0) (2026-03-20)
+
+
+### ⚠ BREAKING CHANGES
+
+* package name changed
+
+### Features
+
+* add --dryRun CLI flag and improve CLI output ([#383](https://github.com/tada5hi/monoship/issues/383)) ([d6c1730](https://github.com/tada5hi/monoship/commit/d6c1730415c7949307404879f61e43b452508484))
+* add Docker-based GitHub Action for publishing ([#385](https://github.com/tada5hi/monoship/issues/385)) ([fc93af8](https://github.com/tada5hi/monoship/commit/fc93af8d72843a23aefd67140297c21abfccb779))
+
+
+### Bug Fixes
+
+* apply stricter tsconfig/eslint rules ([8143607](https://github.com/tada5hi/monoship/commit/8143607a6d0e4e9685de9ee7352305d7d7c13ca0))
+* **deps:** bump cac from 6.7.14 to 7.0.0 in the majorprod group ([#377](https://github.com/tada5hi/monoship/issues/377)) ([e640447](https://github.com/tada5hi/monoship/commit/e640447f3e794696243629e31b3d0d523ab87b27))
+* **deps:** bump the minorandpatch group with 2 updates ([#382](https://github.com/tada5hi/monoship/issues/382)) ([239ab5e](https://github.com/tada5hi/monoship/commit/239ab5eeb2c34b474a03a6db5c5f44d44503eb69))
+* harden error handling and input validation across publish pipeline ([#380](https://github.com/tada5hi/monoship/issues/380)) ([1971b6c](https://github.com/tada5hi/monoship/commit/1971b6c3166ce8612674c9b98112c0f7c696690e))
+* validate workspace deps, harden OIDC provider, and safe writeFile ([#381](https://github.com/tada5hi/monoship/issues/381)) ([3cbc1f8](https://github.com/tada5hi/monoship/commit/3cbc1f8889f2577f5c133efaa9e465dba5fa3aa5))
+
+
+### Miscellaneous Chores
+
+* rename package to monopub ([3c6b96e](https://github.com/tada5hi/monoship/commit/3c6b96ee6bcffd001881b18df55f55c81900ee28))
+
 ## [1.8.1](https://github.com/tada5hi/workspaces-publish/compare/v1.8.0...v1.8.1) (2026-03-18)
 
 
