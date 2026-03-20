@@ -17,6 +17,10 @@ inputs:
         required: false
         default: 'false'
 
+branding:
+    icon: 'package'
+    color: 'blue'
+
 runs:
     using: 'docker'
     image: 'Dockerfile'

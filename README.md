@@ -236,4 +236,6 @@ jobs:
 
 ## License
 
-MIT
+Made with 💚
+
+Published under [MIT](./LICENSE).

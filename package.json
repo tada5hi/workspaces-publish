@@ -38,7 +38,17 @@
         "dev": "ts-node src/cli.ts",
         "start": "node dist/cli.mjs"
     },
-    "keywords": [],
+    "keywords": [
+        "monorepo",
+        "workspaces",
+        "publish",
+        "npm",
+        "registry",
+        "oidc",
+        "github-actions",
+        "ci",
+        "release"
+    ],
     "bin": {
         "monopub": "dist/cli.mjs"
     },
