@@ -6,7 +6,6 @@ dist
 .claude
 .husky
 test
-types
 *.md
 .editorconfig
 .gitignore
