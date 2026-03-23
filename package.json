@@ -70,14 +70,14 @@
         "@types/node": "^25.5.0",
         "@types/pacote": "^11.1.8",
         "@types/semver": "^7.7.1",
-        "@vitest/coverage-v8": "^4.1.0",
+        "@vitest/coverage-v8": "^4.1.1",
         "cross-env": "^10.1.0",
-        "eslint": "^10.0.3",
+        "eslint": "^10.1.0",
         "husky": "^9.1.7",
         "tsdown": "^0.21.4",
         "ts-node": "^10.9.2",
         "typescript": "^5.9.3",
-        "typescript-eslint": "^8.57.1",
+        "typescript-eslint": "^8.57.2",
         "vitest": "^4.1.0"
     },
     "publishConfig": {
