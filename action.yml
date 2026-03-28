@@ -50,7 +50,9 @@ runs:
               NODE_AUTH_TOKEN: ${{ inputs.token }}
           run: |
               if [ -z "$NODE_AUTH_TOKEN" ]; then unset NODE_AUTH_TOKEN; fi
-              node "${{ github.action_path }}/dist/cli.mjs" \
-                --registry "${{ inputs.registry }}" \
-                ${{ inputs['root-package'] == 'true' && '--rootPackage' || '' }} \
-                ${{ inputs['dry-run'] == 'true' && '--dryRun' || '' }}
+
+              args="--registry ${{ inputs.registry }}"
+              if [ "${{ inputs['root-package'] }}" = "true" ]; then args="$args --rootPackage"; else args="$args --no-rootPackage"; fi
+              if [ "${{ inputs['dry-run'] }}" = "true" ]; then args="$args --dryRun"; fi
+
+              node "${{ github.action_path }}/dist/cli.mjs" $args
