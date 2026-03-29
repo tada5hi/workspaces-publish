@@ -16,13 +16,43 @@ inputs:
         description: 'Show what would be published without actually publishing.'
         required: false
         default: 'false'
+    node-version:
+        description: 'Node.js version to use. Set to empty string to skip setup and use the existing Node.js installation.'
+        required: false
+        default: '22'
 
 branding:
     icon: 'package'
     color: 'blue'
 
 runs:
-    using: 'docker'
-    image: 'Dockerfile'
-    env:
-        NODE_AUTH_TOKEN: ${{ inputs.token }}
+    using: 'composite'
+    steps:
+        - name: Setup Node.js
+          if: inputs.node-version != ''
+          uses: actions/setup-node@v4
+          with:
+              node-version: ${{ inputs.node-version }}
+
+        - name: Install monoship dependencies
+          shell: bash
+          run: npm ci --ignore-scripts
+          working-directory: ${{ github.action_path }}
+
+        - name: Build monoship
+          shell: bash
+          run: npm run build
+          working-directory: ${{ github.action_path }}
+
+        - name: Run monoship
+          shell: bash
+          env:
+              NODE_AUTH_TOKEN: ${{ inputs.token }}
+          run: |
+              if [ -z "$NODE_AUTH_TOKEN" ]; then unset NODE_AUTH_TOKEN; fi
+
+              args="--registry ${{ inputs.registry }}"
+              if [ "${{ inputs['root-package'] }}" = "true" ]; then args="$args --rootPackage"; else args="$args --no-rootPackage"; fi
+              if [ "${{ inputs['dry-run'] }}" = "true" ]; then args="$args --dryRun"; fi
+
+              node "${{ github.action_path }}/dist/cli.mjs" $args
