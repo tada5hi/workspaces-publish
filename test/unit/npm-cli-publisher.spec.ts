@@ -206,6 +206,40 @@ describe('src/core/publisher/npm-cli', () => {
         expect(writtenContent).toEqual('//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}\n');
     });
 
+    it('should pass --userconfig pointing to .npmrc when auth token is present', async () => {
+        const { execFn, calls } = createFakeExec();
+        const fs = createFakeFs();
+        const publisher = new NpmCliPublisher({
+            execFn, readFileFn: fs.readFileFn, writeFileFn: fs.writeFileFn, unlinkFn: fs.unlinkFn,
+        });
+
+        await publisher.publish(
+            '/project/packages/a',
+            { name: 'pkg-a', version: '1.0.0' },
+            { '//registry.npmjs.org/:_authToken': 'my-token' },
+        );
+
+        const npmrcPath = path.sep + path.join('project', 'packages', 'a', '.npmrc');
+        expect(calls[0].args).toContain('--userconfig');
+        expect(calls[0].args).toContain(npmrcPath);
+    });
+
+    it('should not pass --userconfig when no auth token', async () => {
+        const { execFn, calls } = createFakeExec();
+        const fs = createFakeFs();
+        const publisher = new NpmCliPublisher({
+            execFn, readFileFn: fs.readFileFn, writeFileFn: fs.writeFileFn, unlinkFn: fs.unlinkFn,
+        });
+
+        await publisher.publish(
+            '/project/packages/a',
+            { name: 'pkg-a', version: '1.0.0' },
+            {},
+        );
+
+        expect(calls[0].args).not.toContain('--userconfig');
+    });
+
     it('should not write .npmrc when no auth token', async () => {
         const { execFn } = createFakeExec();
         const fs = createFakeFs();

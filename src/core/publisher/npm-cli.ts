@@ -158,6 +158,10 @@ export class NpmCliPublisher implements IPackagePublisher {
                 npmrcContent;
 
             await this.writeFileFn(npmrcPath, finalContent, 'utf-8');
+
+            // npm 10+ ignores .npmrc in workspace subdirectories.
+            // Use --userconfig to ensure npm reads the auth token.
+            args.push('--userconfig', npmrcPath);
         }
 
         try {
