@@ -7,15 +7,24 @@
 
 import path from 'node:path';
 import {
-    EnvTokenProvider, HapicRegistryClient,
-    MemoryTokenProvider, NodeFileSystem, NoopLogger, resolvePublisher,
+    EnvTokenProvider, 
+    HapicRegistryClient,
+    MemoryTokenProvider, 
+    NodeFileSystem, 
+    NoopLogger, 
+    resolvePublisher,
 } from './core/index.ts';
 import type {
-    IFileSystem, ITokenProvider, Package, PackageJson,
+    IFileSystem, 
+    ITokenProvider, 
+    Package, 
+    PackageJson,
 } from './core/index.ts';
 import { REGISTRY_URL } from './constants.ts';
 import {
-    isPackagePublishable, isPackagePublished, publishPackage,
+    isPackagePublishable, 
+    isPackagePublished, 
+    publishPackage,
 } from './package.ts';
 import { isError } from './utils/index.ts';
 import { updatePackagesDependencies } from './package-dependency.ts';
@@ -107,7 +116,6 @@ export async function publish(options: PublishOptions = {}): Promise<Package[]> 
 
     const unpublishedPackages: Array<{ pkg: Package; token?: string }> = [];
     for (const p of packages) {
-
         if (!isPackagePublishable(p)) {
             continue;
         }

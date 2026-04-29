@@ -40,7 +40,11 @@ export async function isPackagePublished(
 export async function publishPackage(
     pkg: Package,
     publisher: IPackagePublisher,
-    options: { token?: string; registry: string; tag?: string },
+    options: {
+        token?: string; 
+        registry: string; 
+        tag?: string 
+    },
 ): Promise<boolean> {
     let pkgPath: string;
     if (path.isAbsolute(pkg.path)) {
@@ -49,9 +53,7 @@ export async function publishPackage(
         pkgPath = path.resolve(pkg.path);
     }
 
-    const publishOptions: Record<string, any> = {
-        ...(pkg.content.publishConfig || {}),
-    };
+    const publishOptions: Record<string, any> = { ...(pkg.content.publishConfig || {}) };
 
     if (
         options.token &&

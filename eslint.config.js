@@ -7,12 +7,8 @@ export default eslintConfig(
             'class-methods-use-this': 'off',
             'no-shadow': 'off',
             'no-use-before-define': 'off',
-            '@typescript-eslint/no-unused-vars': ['error', {
-                argsIgnorePattern: '^_',
-            }],
+            '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
         },
     },
-    {
-        ignores: ['dist/**'],
-    },
+    { ignores: ['dist/**'] },
 );

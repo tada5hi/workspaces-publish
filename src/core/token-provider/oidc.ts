@@ -55,9 +55,7 @@ export class OidcTokenProvider implements ITokenProvider {
         const separator = this.requestUrl.includes('?') ? '&' : '?';
         const oidcUrl = `${this.requestUrl}${separator}audience=${encodeURIComponent(audience)}`;
 
-        const oidcResponse = await this.fetchWithRetry(oidcUrl, {
-            headers: { Authorization: `Bearer ${this.requestToken}` },
-        });
+        const oidcResponse = await this.fetchWithRetry(oidcUrl, { headers: { Authorization: `Bearer ${this.requestToken}` } });
 
         if (!oidcResponse.ok) {
             throw new Error(
@@ -79,9 +77,7 @@ export class OidcTokenProvider implements ITokenProvider {
 
         const exchangeResponse = await this.fetchWithRetry(exchangeUrl, {
             method: 'POST',
-            headers: {
-                Authorization: `Bearer ${idToken}`,
-            },
+            headers: { Authorization: `Bearer ${idToken}` },
         });
 
         if (!exchangeResponse.ok) {

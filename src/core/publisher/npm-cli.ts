@@ -28,7 +28,11 @@ const AUTH_TOKEN_PATTERN = /^(\/\/.+)\/:_authToken$/;
 function parseAuthTokenEntry(
     options: Record<string, any>,
     registry?: string,
-): { key: string; token: string; registryPath: string } | undefined {
+): {
+    key: string; 
+    token: string; 
+    registryPath: string 
+} | undefined {
     let registryScope: string | undefined;
     if (registry) {
         try {
@@ -39,7 +43,11 @@ function parseAuthTokenEntry(
         }
     }
 
-    let fallback: { key: string; token: string; registryPath: string } | undefined;
+    let fallback: {
+        key: string; 
+        token: string; 
+        registryPath: string 
+    } | undefined;
     const keys = Object.keys(options);
     for (const key of keys) {
         const match = AUTH_TOKEN_PATTERN.exec(key);

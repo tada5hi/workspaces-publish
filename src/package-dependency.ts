@@ -17,7 +17,6 @@ export function updatePackagesDependencies(packages: Package[]) {
     }
 
     for (const pkg of packages) {
-
         if (pkg.content.dependencies) {
             updatePackageDependenciesByType(pkg, 'dependencies', pkgDir);
         }

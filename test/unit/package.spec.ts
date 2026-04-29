@@ -1,11 +1,19 @@
 import {
-    describe, expect, it,
+    describe, 
+    expect, 
+    it,
 } from 'vitest';
 import {
-    MemoryPublisher, MemoryRegistryClient, NpmCliPublisher, PublishError, RegistryError,
+    MemoryPublisher, 
+    MemoryRegistryClient, 
+    NpmCliPublisher, 
+    PublishError, 
+    RegistryError,
 } from '../../src/core/index.ts';
 import {
-    isPackagePublishable, isPackagePublished, publishPackage,
+    isPackagePublishable, 
+    isPackagePublished, 
+    publishPackage,
 } from '../../src/package.ts';
 import type { IRegistryClient, Package, Packument } from '../../src/core/index.ts';
 
@@ -41,7 +49,11 @@ describe('src/package', () => {
         it('should return false for a private package', () => {
             const pkg: Package = {
                 path: '/project/packages/a',
-                content: { name: 'pkg-a', version: '1.0.0', private: true },
+                content: {
+                    name: 'pkg-a', 
+                    version: '1.0.0', 
+                    private: true, 
+                },
             };
             expect(isPackagePublishable(pkg)).toBe(false);
         });
@@ -78,9 +90,7 @@ describe('src/package', () => {
                 content: { name: 'pkg-a', version: '1.0.0' },
             };
 
-            const result = await isPackagePublished(pkg, registry, {
-                registry: 'https://registry.npmjs.org/',
-            });
+            const result = await isPackagePublished(pkg, registry, { registry: 'https://registry.npmjs.org/' });
             expect(result).toBe(true);
         });
 
@@ -98,9 +108,7 @@ describe('src/package', () => {
                 content: { name: 'pkg-a', version: '1.0.0' },
             };
 
-            const result = await isPackagePublished(pkg, registry, {
-                registry: 'https://registry.npmjs.org/',
-            });
+            const result = await isPackagePublished(pkg, registry, { registry: 'https://registry.npmjs.org/' });
             expect(result).toBe(false);
         });
 
@@ -111,9 +119,7 @@ describe('src/package', () => {
                 content: { name: 'pkg-a', version: '1.0.0' },
             };
 
-            const result = await isPackagePublished(pkg, registry, {
-                registry: 'https://registry.npmjs.org/',
-            });
+            const result = await isPackagePublished(pkg, registry, { registry: 'https://registry.npmjs.org/' });
             expect(result).toBe(false);
         });
 
@@ -128,9 +134,7 @@ describe('src/package', () => {
                 content: { name: 'pkg-a', version: '1.0.0' },
             };
 
-            await expect(isPackagePublished(pkg, registry, {
-                registry: 'https://registry.npmjs.org/',
-            })).rejects.toThrow(RegistryError);
+            await expect(isPackagePublished(pkg, registry, { registry: 'https://registry.npmjs.org/' })).rejects.toThrow(RegistryError);
         });
 
         it('should return false on 404 registry error', async () => {
@@ -144,9 +148,7 @@ describe('src/package', () => {
                 content: { name: 'pkg-a', version: '1.0.0' },
             };
 
-            const result = await isPackagePublished(pkg, registry, {
-                registry: 'https://registry.npmjs.org/',
-            });
+            const result = await isPackagePublished(pkg, registry, { registry: 'https://registry.npmjs.org/' });
             expect(result).toBe(false);
         });
 
@@ -157,9 +159,7 @@ describe('src/package', () => {
                 content: { name: '', version: '1.0.0' },
             };
 
-            await expect(isPackagePublished(pkg, registry, {
-                registry: 'https://registry.npmjs.org/',
-            })).rejects.toThrow('Name or version attribute is missing');
+            await expect(isPackagePublished(pkg, registry, { registry: 'https://registry.npmjs.org/' })).rejects.toThrow('Name or version attribute is missing');
         });
     });
 
@@ -207,9 +207,7 @@ describe('src/package', () => {
                 },
             };
 
-            await publishPackage(pkg, publisher, {
-                registry: 'https://registry.npmjs.org/',
-            });
+            await publishPackage(pkg, publisher, { registry: 'https://registry.npmjs.org/' });
 
             expect(publisher.published[0].options.access).toEqual('public');
         });
@@ -221,9 +219,7 @@ describe('src/package', () => {
                 content: { name: 'pkg-a', version: '1.0.0' },
             };
 
-            await publishPackage(pkg, publisher, {
-                registry: 'https://registry.npmjs.org/',
-            });
+            await publishPackage(pkg, publisher, { registry: 'https://registry.npmjs.org/' });
 
             expect(publisher.published[0].options.tag).toBeUndefined();
         });
@@ -235,9 +231,7 @@ describe('src/package', () => {
                 content: { name: 'pkg-a', version: '2.0.0-beta.0' },
             };
 
-            await publishPackage(pkg, publisher, {
-                registry: 'https://registry.npmjs.org/',
-            });
+            await publishPackage(pkg, publisher, { registry: 'https://registry.npmjs.org/' });
 
             expect(publisher.published[0].options.tag).toEqual('beta');
         });
@@ -249,9 +243,7 @@ describe('src/package', () => {
                 content: { name: 'pkg-a', version: '1.2.3-alpha.4' },
             };
 
-            await publishPackage(pkg, publisher, {
-                registry: 'https://registry.npmjs.org/',
-            });
+            await publishPackage(pkg, publisher, { registry: 'https://registry.npmjs.org/' });
 
             expect(publisher.published[0].options.tag).toEqual('alpha');
         });
@@ -301,9 +293,7 @@ describe('src/package', () => {
                 },
             };
 
-            await publishPackage(pkg, publisher, {
-                registry: 'https://registry.npmjs.org/',
-            });
+            await publishPackage(pkg, publisher, { registry: 'https://registry.npmjs.org/' });
 
             expect(publisher.published[0].options.tag).toEqual('next');
         });
@@ -331,7 +321,10 @@ describe('src/package', () => {
             };
             const fs = createFakeFs();
             const publisher = new NpmCliPublisher({
-                execFn, readFileFn: fs.readFileFn, writeFileFn: fs.writeFileFn, unlinkFn: fs.unlinkFn,
+                execFn, 
+                readFileFn: fs.readFileFn, 
+                writeFileFn: fs.writeFileFn, 
+                unlinkFn: fs.unlinkFn,
             });
             const pkg: Package = {
                 path: '/project/packages/a',
@@ -354,7 +347,10 @@ describe('src/package', () => {
             };
             const fs = createFakeFs();
             const publisher = new NpmCliPublisher({
-                execFn, readFileFn: fs.readFileFn, writeFileFn: fs.writeFileFn, unlinkFn: fs.unlinkFn,
+                execFn, 
+                readFileFn: fs.readFileFn, 
+                writeFileFn: fs.writeFileFn, 
+                unlinkFn: fs.unlinkFn,
             });
             const pkg: Package = {
                 path: '/project/packages/a',
@@ -377,7 +373,10 @@ describe('src/package', () => {
             };
             const fs = createFakeFs();
             const publisher = new NpmCliPublisher({
-                execFn, readFileFn: fs.readFileFn, writeFileFn: fs.writeFileFn, unlinkFn: fs.unlinkFn,
+                execFn, 
+                readFileFn: fs.readFileFn, 
+                writeFileFn: fs.writeFileFn, 
+                unlinkFn: fs.unlinkFn,
             });
             const pkg: Package = {
                 path: '/project/packages/a',
@@ -398,7 +397,10 @@ describe('src/package', () => {
             };
             const fs = createFakeFs();
             const publisher = new NpmCliPublisher({
-                execFn, readFileFn: fs.readFileFn, writeFileFn: fs.writeFileFn, unlinkFn: fs.unlinkFn,
+                execFn, 
+                readFileFn: fs.readFileFn, 
+                writeFileFn: fs.writeFileFn, 
+                unlinkFn: fs.unlinkFn,
             });
             const pkg: Package = {
                 path: '/project/packages/a',

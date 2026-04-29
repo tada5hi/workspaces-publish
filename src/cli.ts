@@ -9,9 +9,14 @@
 
 import { cac } from 'cac';
 import {
-    ChainTokenProvider, ConsolaLogger, EnvTokenProvider,
-    HapicRegistryClient, MemoryTokenProvider, NodeFileSystem,
-    OidcTokenProvider, resolvePublisher,
+    ChainTokenProvider, 
+    ConsolaLogger, 
+    EnvTokenProvider,
+    HapicRegistryClient, 
+    MemoryTokenProvider, 
+    NodeFileSystem,
+    OidcTokenProvider, 
+    resolvePublisher,
 } from './core/index.ts';
 import type { ITokenProvider } from './core/index.ts';
 import { publish } from './module.ts';
@@ -50,15 +55,9 @@ const cli = cac();
 
 cli
     .command('', 'Publish workspace packages')
-    .option('--token <token>', 'Token for registry', {
-        default: process.env.NODE_AUTH_TOKEN,
-    })
-    .option('--registry <registry>', 'Registry url', {
-        default: 'https://registry.npmjs.org/',
-    })
-    .option('--root <root>', 'Root directory', {
-        default: process.cwd(),
-    })
+    .option('--token <token>', 'Token for registry', { default: process.env.NODE_AUTH_TOKEN })
+    .option('--registry <registry>', 'Registry url', { default: 'https://registry.npmjs.org/' })
+    .option('--root <root>', 'Root directory', { default: process.cwd() })
     .option('--rootPackage', 'Also consider the root package for publishing')
     .option('--tag <tag>', 'Dist-tag to publish under (overrides auto-detected prerelease tag)')
     .option('--dryRun', 'Show what would be published without actually publishing')

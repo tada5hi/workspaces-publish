@@ -1,8 +1,12 @@
 import {
-    afterEach, describe, expect, it,
+    afterEach, 
+    describe, 
+    expect, 
+    it,
 } from 'vitest';
 import {
-    EnvTokenProvider, MemoryTokenProvider,
+    EnvTokenProvider, 
+    MemoryTokenProvider,
 } from '../../src/core/index.ts';
 
 describe('MemoryTokenProvider', () => {

@@ -6,7 +6,11 @@
  */
 
 import type {
-    IFileSystem, ILogger, IPackagePublisher, IRegistryClient, ITokenProvider,
+    IFileSystem, 
+    ILogger, 
+    IPackagePublisher, 
+    IRegistryClient, 
+    ITokenProvider,
 } from './core/index.ts';
 
 export type PublishOptions = {

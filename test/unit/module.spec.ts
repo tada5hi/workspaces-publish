@@ -1,9 +1,14 @@
 import {
-    describe, expect, it,
+    describe, 
+    expect, 
+    it,
 } from 'vitest';
 import {
-    MemoryFileSystem, MemoryPublisher,
-    MemoryRegistryClient, MemoryTokenProvider, NoopLogger,
+    MemoryFileSystem, 
+    MemoryPublisher,
+    MemoryRegistryClient, 
+    MemoryTokenProvider, 
+    NoopLogger,
 } from '../../src/core/index.ts';
 import type { ILogger } from '../../src/core/index.ts';
 import { publish } from '../../src/module.ts';
@@ -229,9 +234,7 @@ describe('src/module', () => {
     });
 
     it('should throw descriptive error on invalid root package.json JSON', async () => {
-        const fs = new MemoryFileSystem({
-            '/project/package.json': '{ invalid json',
-        });
+        const fs = new MemoryFileSystem({ '/project/package.json': '{ invalid json' });
 
         await expect(publish(createTestOptions({ fileSystem: fs }))).rejects.toThrow(
             'Invalid JSON in package.json at /project/package.json',
@@ -259,15 +262,16 @@ describe('src/module', () => {
         const packages = await publish(createTestOptions({
             fileSystem: new MemoryFileSystem({
                 '/project/package.json': JSON.stringify({
-                    name: 'root', version: '1.0.0', workspaces: ['packages/*'],
+                    name: 'root', 
+                    version: '1.0.0', 
+                    workspaces: ['packages/*'],
                 }),
                 '/project/packages/pkgA/package.json': JSON.stringify({
-                    name: 'pkg-a', version: '1.0.0',
+                    name: 'pkg-a',
+                    version: '1.0.0',
                     dependencies: { 'pkg-missing': 'workspace:^' },
                 }),
-                '/project/packages/pkgB/package.json': JSON.stringify({
-                    name: 'pkg-b', version: '1.0.0',
-                }),
+                '/project/packages/pkgB/package.json': JSON.stringify({ name: 'pkg-b', version: '1.0.0' }),
             }),
             logger,
             rootPackage: false,
@@ -322,15 +326,16 @@ describe('src/module', () => {
     it('should skip package when writeFile fails during dependency rewrite', async () => {
         const baseFs = new MemoryFileSystem({
             '/project/package.json': JSON.stringify({
-                name: 'root', version: '1.0.0', workspaces: ['packages/*'],
+                name: 'root', 
+                version: '1.0.0', 
+                workspaces: ['packages/*'],
             }),
             '/project/packages/pkgA/package.json': JSON.stringify({
-                name: 'pkg-a', version: '1.0.0',
+                name: 'pkg-a',
+                version: '1.0.0',
                 dependencies: { 'pkg-b': 'workspace:^' },
             }),
-            '/project/packages/pkgB/package.json': JSON.stringify({
-                name: 'pkg-b', version: '1.0.0',
-            }),
+            '/project/packages/pkgB/package.json': JSON.stringify({ name: 'pkg-b', version: '1.0.0' }),
         });
 
         const logger = createSpyLogger();

@@ -1,5 +1,7 @@
 import {
-    describe, expect, it,
+    describe, 
+    expect, 
+    it,
 } from 'vitest';
 import { updatePackagesDependencies } from '../../src/package-dependency.ts';
 import type { Package } from '../../src/core/index.ts';
