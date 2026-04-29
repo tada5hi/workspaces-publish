@@ -60,12 +60,14 @@ cli
         default: process.cwd(),
     })
     .option('--rootPackage', 'Also consider the root package for publishing')
+    .option('--tag <tag>', 'Dist-tag to publish under (overrides auto-detected prerelease tag)')
     .option('--dryRun', 'Show what would be published without actually publishing')
     .action(async (options: {
         token: string,
         registry: string,
         root: string,
         rootPackage?: boolean,
+        tag?: string,
         dryRun?: boolean
     }) => {
         try {
@@ -86,6 +88,7 @@ cli
                 registry: options.registry,
                 cwd: options.root,
                 rootPackage: options.rootPackage ?? true,
+                tag: options.tag,
                 dryRun: options.dryRun,
                 fileSystem: new NodeFileSystem(),
                 registryClient: new HapicRegistryClient(),

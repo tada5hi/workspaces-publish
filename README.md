@@ -49,6 +49,7 @@ npx monoship \
 | `--registry <registry>` | `string` | `https://registry.npmjs.org/` | Registry URL to publish to. |
 | `--root <root>` | `string` | `process.cwd()` | Directory where the root `package.json` is located. |
 | `--rootPackage` | `boolean` | `true` | Also consider the root package for publishing (skipped if `private: true` or missing `name`/`version`). |
+| `--tag <tag>` | `string` | Auto-detected | Dist-tag to publish under. Overrides the prerelease identifier auto-detected from `version` (e.g. `1.0.0-beta.0` → `beta`). Stable versions default to `latest`. |
 
 ## Authentication
 
@@ -98,6 +99,7 @@ Or with OIDC trusted publishing (no token needed):
 | `token` | No | — | npm auth token. Optional when using OIDC trusted publishing. |
 | `registry` | No | `https://registry.npmjs.org/` | Registry URL to publish to. |
 | `root-package` | No | `true` | Also consider the root package for publishing. |
+| `tag` | No | Auto-detected | Dist-tag to publish under. Overrides the prerelease identifier auto-detected from `version`. Stable versions default to `latest`. |
 | `dry-run` | No | `false` | Show what would be published without actually publishing. |
 
 ## Programmatic API
@@ -124,6 +126,7 @@ The `publish()` function returns an array of `Package` objects for each successf
 | `registry` | `string` | `https://registry.npmjs.org/` | Registry URL. |
 | `token` | `string` | — | Auth token (wrapped in `MemoryTokenProvider` internally). |
 | `rootPackage` | `boolean` | `true` | Include the root package as a publish candidate. |
+| `tag` | `string` | Auto-detected | Dist-tag to publish under. Overrides the prerelease identifier auto-detected from `version`. |
 | `dryRun` | `boolean` | `false` | Resolve dependencies and check versions without actually publishing. |
 | `fileSystem` | `IFileSystem` | `NodeFileSystem` | File system adapter. |
 | `registryClient` | `IRegistryClient` | `HapicRegistryClient` | Registry metadata adapter. |

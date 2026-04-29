@@ -161,6 +161,39 @@ describe('src/module', () => {
         expect(names).toContain('pkg-c');
     });
 
+    it('should forward explicit tag to all published packages', async () => {
+        const publisher = new MemoryPublisher();
+
+        await publish(createTestOptions({ publisher, tag: 'next' }));
+
+        expect(publisher.published.length).toEqual(3);
+        for (const p of publisher.published) {
+            expect(p.options.tag).toEqual('next');
+        }
+    });
+
+    it('should auto-detect prerelease tag per package', async () => {
+        const publisher = new MemoryPublisher();
+        const fs = new MemoryFileSystem({
+            '/project/package.json': JSON.stringify({
+                name: 'foo',
+                version: '2.0.0-beta.0',
+                workspaces: ['packages/*'],
+            }),
+            '/project/packages/pkgA/package.json': JSON.stringify({
+                name: 'pkg-a',
+                version: '1.0.0',
+            }),
+        });
+
+        await publish(createTestOptions({ publisher, fileSystem: fs }));
+
+        const root = publisher.published.find((p) => p.manifest.name === 'foo');
+        const a = publisher.published.find((p) => p.manifest.name === 'pkg-a');
+        expect(root?.options.tag).toEqual('beta');
+        expect(a?.options.tag).toBeUndefined();
+    });
+
     it('should not include root package when rootPackage is false', async () => {
         const packages = await publish(createTestOptions({ rootPackage: false }));
 
