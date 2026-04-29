@@ -6,6 +6,7 @@
  */
 
 import path from 'node:path';
+import semver from 'semver';
 import type { IPackagePublisher, IRegistryClient, Package } from './core/index.ts';
 import { isRegistryError } from './core/index.ts';
 
@@ -39,7 +40,7 @@ export async function isPackagePublished(
 export async function publishPackage(
     pkg: Package,
     publisher: IPackagePublisher,
-    options: { token?: string; registry: string },
+    options: { token?: string; registry: string; tag?: string },
 ): Promise<boolean> {
     let pkgPath: string;
     if (path.isAbsolute(pkg.path)) {
@@ -63,7 +64,33 @@ export async function publishPackage(
         publishOptions[`//${url.host}${registryPath}/:_authToken`] = options.token;
     }
 
+    const tag = resolveDistTag(pkg, options.tag, publishOptions.tag);
+    if (tag) {
+        publishOptions.tag = tag;
+    }
+
     return publisher.publish(pkgPath, pkg.content, publishOptions);
+}
+
+function resolveDistTag(
+    pkg: Package,
+    explicitTag: string | undefined,
+    publishConfigTag: string | undefined,
+): string | undefined {
+    if (explicitTag && explicitTag.length > 0) {
+        return explicitTag;
+    }
+
+    if (publishConfigTag && publishConfigTag.length > 0) {
+        return publishConfigTag;
+    }
+
+    const prerelease = semver.prerelease(pkg.content.version);
+    if (prerelease && prerelease.length > 0 && typeof prerelease[0] === 'string') {
+        return prerelease[0];
+    }
+
+    return undefined;
 }
 
 export function isPackagePublishable(pkg: Package): boolean {

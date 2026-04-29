@@ -14,6 +14,7 @@ export type PublishOptions = {
     rootPackage?: boolean,
     registry?: string,
     token?: string,
+    tag?: string,
     dryRun?: boolean,
 
     fileSystem?: IFileSystem,

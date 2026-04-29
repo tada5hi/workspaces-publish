@@ -214,6 +214,115 @@ describe('src/package', () => {
             expect(publisher.published[0].options.access).toEqual('public');
         });
 
+        it('should not pass tag for a stable version', async () => {
+            const publisher = new MemoryPublisher();
+            const pkg: Package = {
+                path: '/project/packages/a',
+                content: { name: 'pkg-a', version: '1.0.0' },
+            };
+
+            await publishPackage(pkg, publisher, {
+                registry: 'https://registry.npmjs.org/',
+            });
+
+            expect(publisher.published[0].options.tag).toBeUndefined();
+        });
+
+        it('should auto-detect tag from prerelease identifier', async () => {
+            const publisher = new MemoryPublisher();
+            const pkg: Package = {
+                path: '/project/packages/a',
+                content: { name: 'pkg-a', version: '2.0.0-beta.0' },
+            };
+
+            await publishPackage(pkg, publisher, {
+                registry: 'https://registry.npmjs.org/',
+            });
+
+            expect(publisher.published[0].options.tag).toEqual('beta');
+        });
+
+        it('should auto-detect tag for alpha prerelease', async () => {
+            const publisher = new MemoryPublisher();
+            const pkg: Package = {
+                path: '/project/packages/a',
+                content: { name: 'pkg-a', version: '1.2.3-alpha.4' },
+            };
+
+            await publishPackage(pkg, publisher, {
+                registry: 'https://registry.npmjs.org/',
+            });
+
+            expect(publisher.published[0].options.tag).toEqual('alpha');
+        });
+
+        it('should prefer explicit tag over auto-detected prerelease identifier', async () => {
+            const publisher = new MemoryPublisher();
+            const pkg: Package = {
+                path: '/project/packages/a',
+                content: { name: 'pkg-a', version: '1.2.3-rc.0' },
+            };
+
+            await publishPackage(pkg, publisher, {
+                registry: 'https://registry.npmjs.org/',
+                tag: 'next',
+            });
+
+            expect(publisher.published[0].options.tag).toEqual('next');
+        });
+
+        it('should prefer explicit tag over publishConfig.tag', async () => {
+            const publisher = new MemoryPublisher();
+            const pkg: Package = {
+                path: '/project/packages/a',
+                content: {
+                    name: 'pkg-a',
+                    version: '1.0.0',
+                    publishConfig: { tag: 'legacy' },
+                },
+            };
+
+            await publishPackage(pkg, publisher, {
+                registry: 'https://registry.npmjs.org/',
+                tag: 'next',
+            });
+
+            expect(publisher.published[0].options.tag).toEqual('next');
+        });
+
+        it('should prefer publishConfig.tag over auto-detected prerelease', async () => {
+            const publisher = new MemoryPublisher();
+            const pkg: Package = {
+                path: '/project/packages/a',
+                content: {
+                    name: 'pkg-a',
+                    version: '1.2.3-beta.0',
+                    publishConfig: { tag: 'next' },
+                },
+            };
+
+            await publishPackage(pkg, publisher, {
+                registry: 'https://registry.npmjs.org/',
+            });
+
+            expect(publisher.published[0].options.tag).toEqual('next');
+        });
+
+        it('should allow explicit tag for a stable version', async () => {
+            const publisher = new MemoryPublisher();
+            const pkg: Package = {
+                path: '/project/packages/a',
+                content: { name: 'pkg-a', version: '1.0.0' },
+            };
+
+            await publishPackage(pkg, publisher, {
+                registry: 'https://registry.npmjs.org/',
+                tag: 'legacy',
+            });
+
+            expect(publisher.published[0].options.tag).toEqual('legacy');
+        });
+
         it('should return false on npmjs EPUBLISHCONFLICT', async () => {
             const execFn = async () => {
                 const err: Record<string, unknown> = new Error('Command failed');
